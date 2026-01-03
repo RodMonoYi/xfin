@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: xfin-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: xfin
+      MYSQL_USER: xfin_user
+      MYSQL_PASSWORD: xfin_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - xfin-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: xfin-backend
+    environment:
+      DATABASE_URL: mysql://xfin_user:xfin_password@mysql:3306/xfin
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      JWT_REFRESH_SECRET: your-super-secret-refresh-key-change-in-production
+      NODE_ENV: development
+      PORT: 3000
+    ports:
+      - "3000:3000"
+      - "5555:5555"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - xfin-network
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: xfin-frontend
+    environment:
+      VITE_API_URL: http://localhost:3000
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    networks:
+      - xfin-network
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+networks:
+  xfin-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+

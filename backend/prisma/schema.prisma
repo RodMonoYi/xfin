@@ -1,0 +1,218 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String   @id @default(uuid())
+  name                String
+  email               String   @unique
+  passwordHash        String   @map("password_hash")
+  initialBalance      Decimal? @default(0) @map("initial_balance") @db.Decimal(10, 2)
+  initialBalanceSetAt DateTime? @map("initial_balance_set_at")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  sessions        Session[]
+  categories      Category[]
+  transactions    Transaction[]
+  recurringIncomes RecurringIncome[]
+  recurringExpenses RecurringExpense[]
+  debts          Debt[]
+  receivables    Receivable[]
+  wishlistItems  WishlistItem[]
+
+  @@map("users")
+}
+
+model Session {
+  id               String   @id @default(uuid())
+  refreshTokenHash String   @unique @map("refresh_token_hash")
+  userId           String   @map("user_id")
+  expiresAt        DateTime @map("expires_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Category {
+  id        String            @id @default(uuid())
+  name      String
+  type      CategoryType
+  userId    String?           @map("user_id")
+  isDefault Boolean           @default(false) @map("is_default")
+  createdAt DateTime          @default(now()) @map("created_at")
+  updatedAt DateTime          @updatedAt @map("updated_at")
+
+  user         User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@map("categories")
+}
+
+enum CategoryType {
+  INCOME
+  EXPENSE
+}
+
+model Transaction {
+  id                String          @id @default(uuid())
+  type              TransactionType
+  amount            Decimal         @db.Decimal(10, 2)
+  date              DateTime
+  description       String?
+  categoryId        String          @map("category_id")
+  userId            String          @map("user_id")
+  isImportant       Boolean         @default(false) @map("is_important")
+  paymentMethod     PaymentMethod?  @map("payment_method")
+  isInstallment     Boolean         @default(false) @map("is_installment")
+  installmentsTotal Int?            @map("installments_total")
+  installmentIndex  Int?            @map("installment_index")
+  parentId          String?         @map("parent_id")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+
+  category Category @relation(fields: [categoryId], references: [id])
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent   Transaction? @relation("TransactionInstallments", fields: [parentId], references: [id])
+  children Transaction[] @relation("TransactionInstallments")
+
+  @@map("transactions")
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  PIX
+  BANK_TRANSFER
+  OTHER
+}
+
+model RecurringIncome {
+  id          String    @id @default(uuid())
+  amount      Decimal   @db.Decimal(10, 2)
+  dayOfMonth  Int       @map("day_of_month")
+  startDate   DateTime  @map("start_date")
+  endDate     DateTime? @map("end_date")
+  active      Boolean   @default(true)
+  userId      String    @map("user_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("recurring_incomes")
+}
+
+model RecurringExpense {
+  id          String    @id @default(uuid())
+  amount      Decimal   @db.Decimal(10, 2)
+  dayOfMonth  Int       @map("day_of_month")
+  startDate   DateTime  @map("start_date")
+  endDate     DateTime? @map("end_date")
+  active      Boolean   @default(true)
+  userId      String    @map("user_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("recurring_expenses")
+}
+
+model Debt {
+  id          String      @id @default(uuid())
+  creditorName String     @map("creditor_name")
+  description String?
+  totalAmount Decimal     @map("total_amount") @db.Decimal(10, 2)
+  isRecurring Boolean     @default(false) @map("is_recurring")
+  recurrence  RecurrenceType?
+  startDate   DateTime    @map("start_date")
+  dueDate     DateTime    @map("due_date")
+  paidAt      DateTime?   @map("paid_at")
+  priority    Priority    @default(MEDIUM)
+  status      DebtStatus  @default(OPEN)
+  userId      String      @map("user_id")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("debts")
+}
+
+enum RecurrenceType {
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum DebtStatus {
+  OPEN
+  PAID
+  OVERDUE
+}
+
+model Receivable {
+  id          String            @id @default(uuid())
+  debtorName  String            @map("debtor_name")
+  description String?
+  totalAmount Decimal           @map("total_amount") @db.Decimal(10, 2)
+  dueDate     DateTime          @map("due_date")
+  receivedAt  DateTime?         @map("received_at")
+  status      ReceivableStatus  @default(OPEN)
+  userId      String            @map("user_id")
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("receivables")
+}
+
+enum ReceivableStatus {
+  OPEN
+  RECEIVED
+  OVERDUE
+}
+
+model WishlistItem {
+  id            String            @id @default(uuid())
+  name          String
+  priority      Int
+  estimatedPrice Decimal?         @map("estimated_price") @db.Decimal(10, 2)
+  utilityNote   String?           @map("utility_note")
+  targetDate    DateTime?         @map("target_date")
+  status        WishlistStatus    @default(PLANNED)
+  userId        String            @map("user_id")
+  createdAt     DateTime          @default(now()) @map("created_at")
+  updatedAt     DateTime          @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("wishlist_items")
+}
+
+enum WishlistStatus {
+  PLANNED
+  BOUGHT
+  DROPPED
+}
+
