@@ -14,7 +14,7 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export const Login: React.FC = () => {
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -31,8 +31,13 @@ export const Login: React.FC = () => {
     setError('');
     setLoading(true);
     try {
-      await login(data.email, data.password, data.rememberMe);
-      navigate('/dashboard');
+      const user = await login(data.email, data.password, data.rememberMe);
+      // Redireciona baseado no status do onboarding
+      if (!user.initialBalanceSetAt) {
+        navigate('/onboarding');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err: any) {
       setError(err.response?.data?.error || 'Erro ao fazer login');
     } finally {

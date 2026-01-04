@@ -23,6 +23,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
 
+  if (!user.initialBalanceSetAt) {
+    return <Navigate to="/onboarding" replace />;
+  }
+
   return <>{children}</>;
 };
 

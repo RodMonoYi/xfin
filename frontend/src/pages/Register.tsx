@@ -35,8 +35,13 @@ export const Register: React.FC = () => {
     setError('');
     setLoading(true);
     try {
-      await registerUser(data.name, data.email, data.password);
-      navigate('/dashboard');
+      const user = await registerUser(data.name, data.email, data.password);
+      // Redireciona baseado no status do onboarding
+      if (!user.initialBalanceSetAt) {
+        navigate('/onboarding');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err: any) {
       setError(err.response?.data?.error || 'Erro ao criar conta');
     } finally {

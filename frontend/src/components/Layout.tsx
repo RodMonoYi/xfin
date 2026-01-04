@@ -1,6 +1,18 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+import {
+  ChartBarIcon,
+  BanknotesIcon,
+  CalendarDaysIcon,
+  CreditCardIcon,
+  ArrowDownTrayIcon,
+  GiftIcon,
+  WalletIcon,
+  Bars3Icon,
+  XMarkIcon,
+  ChevronDownIcon,
+} from '@heroicons/react/24/outline';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -19,21 +31,21 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   const navItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: '📊' },
+    { path: '/dashboard', label: 'Dashboard', icon: ChartBarIcon },
     { 
       path: '/transactions', 
       label: 'Transações', 
-      icon: '💰',
+      icon: BanknotesIcon,
       submenu: [
         { path: '/transactions', label: 'Listar Transações' },
         { path: '/categories', label: 'Gerenciar Categorias' },
       ]
     },
-    { path: '/recurring', label: 'Fixos e Estimados', icon: '📅' },
-    { path: '/debts', label: 'Dívidas', icon: '💳' },
-    { path: '/receivables', label: 'A Receber', icon: '📥' },
-    { path: '/wishlist', label: 'Lista de Desejos', icon: '🎯' },
-    { path: '/piggy-banks', label: 'Caixinhas', icon: '🐷' },
+    { path: '/recurring', label: 'Fixos e Estimados', icon: CalendarDaysIcon },
+    { path: '/debts', label: 'Dívidas', icon: CreditCardIcon },
+    { path: '/receivables', label: 'A Receber', icon: ArrowDownTrayIcon },
+    { path: '/wishlist', label: 'Lista de Desejos', icon: GiftIcon },
+    { path: '/piggy-banks', label: 'Caixinhas', icon: WalletIcon },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -68,7 +80,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               onClick={() => setSidebarOpen(false)}
               className="lg:hidden text-gray-500 hover:text-gray-700"
             >
-              ✕
+              <XMarkIcon className="w-6 h-6" />
             </button>
           </div>
 
@@ -86,17 +98,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                       }`}
                     >
                       <div className="flex items-center space-x-3">
-                        <span className="text-xl">{item.icon}</span>
+                        <item.icon className="w-5 h-5" />
                         <span>{item.label}</span>
                       </div>
-                      <svg
+                      <ChevronDownIcon
                         className={`w-4 h-4 transition-transform ${transactionsExpanded ? 'transform rotate-180' : ''}`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
+                      />
                     </button>
                     {transactionsExpanded && (
                       <div className="ml-8 mt-1 space-y-1">
@@ -130,7 +137,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                       : 'text-gray-700 hover:bg-gray-100'
                   }`}
                 >
-                  <span className="text-xl">{item.icon}</span>
+                  <item.icon className="w-5 h-5" />
                   <span>{item.label}</span>
                 </Link>
               );
@@ -161,7 +168,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               onClick={() => setSidebarOpen(true)}
               className="lg:hidden text-gray-500 hover:text-gray-700"
             >
-              ☰
+              <Bars3Icon className="w-6 h-6" />
             </button>
             <h2 className="text-lg font-semibold text-gray-800">
               {navItems.find((item) => isActive(item.path))?.label || 'X-Fin'}
