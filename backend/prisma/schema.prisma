@@ -199,11 +199,13 @@ enum ReceivableStatus {
 model WishlistItem {
   id            String            @id @default(uuid())
   name          String
-  priority      Int
+  priority      WishlistPriority
   estimatedPrice Decimal?         @map("estimated_price") @db.Decimal(10, 2)
   utilityNote   String?           @map("utility_note")
   targetDate    DateTime?         @map("target_date")
   status        WishlistStatus    @default(PLANNED)
+  photoUrl      String?           @map("photo_url")
+  purchaseLinks Json?             @map("purchase_links")
   userId        String            @map("user_id")
   createdAt     DateTime          @default(now()) @map("created_at")
   updatedAt     DateTime          @updatedAt @map("updated_at")
@@ -211,6 +213,14 @@ model WishlistItem {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("wishlist_items")
+}
+
+enum WishlistPriority {
+  SUPERFLUO
+  BAIXA
+  MEDIA
+  ALTA
+  ESSENCIAL
 }
 
 enum WishlistStatus {

@@ -22,7 +22,8 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'piggy-bank-' + uniqueSuffix + path.extname(file.originalname));
+    const prefix = req.path?.includes('wishlist') ? 'wishlist' : 'piggy-bank';
+    cb(null, prefix + '-' + uniqueSuffix + path.extname(file.originalname));
   },
 });
 

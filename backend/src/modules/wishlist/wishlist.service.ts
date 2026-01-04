@@ -1,24 +1,39 @@
 import { prisma } from '../../config/database';
-import { WishlistStatus } from '@prisma/client';
+import { WishlistStatus, WishlistPriority } from '@prisma/client';
+
+const priorityOrder: Record<WishlistPriority, number> = {
+  SUPERFLUO: 1,
+  BAIXA: 2,
+  MEDIA: 3,
+  ALTA: 4,
+  ESSENCIAL: 5,
+};
 
 export class WishlistService {
   async list(userId: string) {
-    return prisma.wishlistItem.findMany({
+    const items = await prisma.wishlistItem.findMany({
       where: { userId },
-      orderBy: [
-        { priority: 'desc' },
-        { estimatedPrice: 'asc' },
-      ],
+    });
+    
+    // Ordenar por prioridade (ordem do enum) e depois por preço
+    return items.sort((a, b) => {
+      const priorityDiff = priorityOrder[b.priority] - priorityOrder[a.priority];
+      if (priorityDiff !== 0) return priorityDiff;
+      const priceA = Number(a.estimatedPrice) || 0;
+      const priceB = Number(b.estimatedPrice) || 0;
+      return priceA - priceB;
     });
   }
 
   async create(userId: string, data: {
     name: string;
-    priority: number;
+    priority: WishlistPriority;
     estimatedPrice?: number | null;
     utilityNote?: string | null;
     targetDate?: string | null;
     status?: WishlistStatus;
+    photoUrl?: string | null;
+    purchaseLinks?: string[] | null;
   }) {
     return prisma.wishlistItem.create({
       data: {
@@ -28,6 +43,8 @@ export class WishlistService {
         utilityNote: data.utilityNote || null,
         targetDate: data.targetDate ? new Date(data.targetDate) : null,
         status: data.status || WishlistStatus.PLANNED,
+        photoUrl: data.photoUrl || null,
+        purchaseLinks: data.purchaseLinks || null,
         userId,
       },
     });
@@ -35,11 +52,13 @@ export class WishlistService {
 
   async update(userId: string, id: string, data: {
     name?: string;
-    priority?: number;
+    priority?: WishlistPriority;
     estimatedPrice?: number | null;
     utilityNote?: string | null;
     targetDate?: string | null;
     status?: WishlistStatus;
+    photoUrl?: string | null;
+    purchaseLinks?: string[] | null;
   }) {
     const item = await prisma.wishlistItem.findFirst({
       where: { id, userId },
@@ -56,11 +75,25 @@ export class WishlistService {
     if (data.utilityNote !== undefined) updateData.utilityNote = data.utilityNote;
     if (data.targetDate !== undefined) updateData.targetDate = data.targetDate ? new Date(data.targetDate) : null;
     if (data.status) updateData.status = data.status;
+    if (data.photoUrl !== undefined) updateData.photoUrl = data.photoUrl;
+    if (data.purchaseLinks !== undefined) updateData.purchaseLinks = data.purchaseLinks;
 
     return prisma.wishlistItem.update({
       where: { id },
       data: updateData,
     });
+  }
+
+  async findById(userId: string, id: string) {
+    const item = await prisma.wishlistItem.findFirst({
+      where: { id, userId },
+    });
+
+    if (!item) {
+      throw new Error('Item não encontrado');
+    }
+
+    return item;
   }
 
   async delete(userId: string, id: string) {
