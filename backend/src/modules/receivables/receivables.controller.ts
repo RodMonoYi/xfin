@@ -47,6 +47,15 @@ export class ReceivablesController {
       res.status(400).json({ error: error.message });
     }
   }
+
+  async unmarkReceived(req: AuthRequest, res: Response) {
+    try {
+      const receivable = await receivablesService.unmarkReceived(req.userId!, req.params.id);
+      res.json(receivable);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  }
 }
 
 export const receivablesController = new ReceivablesController();

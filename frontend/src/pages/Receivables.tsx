@@ -21,6 +21,11 @@ export const Receivables: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Receivable | null>(null);
+  const [confirmModal, setConfirmModal] = useState<{
+    show: boolean;
+    type: 'markReceived' | 'unmarkReceived' | 'delete' | null;
+    receivable?: Receivable;
+  }>({ show: false, type: null });
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<ReceivableFormData>({
     resolver: zodResolver(receivableSchema),
@@ -45,6 +50,10 @@ export const Receivables: React.FC = () => {
   const onSubmit = async (data: ReceivableFormData) => {
     try {
       if (editing) {
+        if (editing.status === 'RECEIVED') {
+          toast.error('Não é possível editar um recebível que já foi recebido. Reabra o recebível primeiro.');
+          return;
+        }
         await receivablesApi.update(editing.id, data);
         toast.success('Recebível atualizado com sucesso!');
       } else {
@@ -63,6 +72,10 @@ export const Receivables: React.FC = () => {
   };
 
   const handleEdit = (receivable: Receivable) => {
+    if (receivable.status === 'RECEIVED') {
+      toast.error('Não é possível editar um recebível que já foi recebido. Reabra o recebível primeiro.');
+      return;
+    }
     setEditing(receivable);
     reset({
       debtorName: receivable.debtorName,
@@ -73,11 +86,18 @@ export const Receivables: React.FC = () => {
     setShowModal(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este recebível?')) return;
+  const handleDelete = (id: string) => {
+    const receivable = receivables.find(r => r.id === id);
+    if (!receivable) return;
+    setConfirmModal({ show: true, type: 'delete', receivable });
+  };
+
+  const confirmDelete = async () => {
+    if (!confirmModal.receivable) return;
     try {
-      await receivablesApi.delete(id);
+      await receivablesApi.delete(confirmModal.receivable.id);
       toast.success('Recebível excluído com sucesso!');
+      setConfirmModal({ show: false, type: null });
       loadData();
     } catch (error: any) {
       console.error('Erro ao excluir recebível:', error);
@@ -86,14 +106,42 @@ export const Receivables: React.FC = () => {
     }
   };
 
-  const handleMarkReceived = async (id: string) => {
+  const handleMarkReceived = (id: string) => {
+    const receivable = receivables.find(r => r.id === id);
+    if (!receivable) return;
+    setConfirmModal({ show: true, type: 'markReceived', receivable });
+  };
+
+  const confirmMarkReceived = async () => {
+    if (!confirmModal.receivable) return;
     try {
-      await receivablesApi.markReceived(id);
+      await receivablesApi.markReceived(confirmModal.receivable.id);
       toast.success('Recebível marcado como recebido!');
+      setConfirmModal({ show: false, type: null });
       loadData();
     } catch (error: any) {
       console.error('Erro ao marcar como recebido:', error);
       const errorMessage = error?.response?.data?.error || error?.message || 'Erro ao marcar recebível como recebido. Tente novamente.';
+      toast.error(errorMessage);
+    }
+  };
+
+  const handleUnmarkReceived = (id: string) => {
+    const receivable = receivables.find(r => r.id === id);
+    if (!receivable) return;
+    setConfirmModal({ show: true, type: 'unmarkReceived', receivable });
+  };
+
+  const confirmUnmarkReceived = async () => {
+    if (!confirmModal.receivable) return;
+    try {
+      await receivablesApi.unmarkReceived(confirmModal.receivable.id);
+      toast.success('Recebível reaberto com sucesso!');
+      setConfirmModal({ show: false, type: null });
+      loadData();
+    } catch (error: any) {
+      console.error('Erro ao reabrir recebível:', error);
+      const errorMessage = error?.response?.data?.error || error?.message || 'Erro ao reabrir recebível. Tente novamente.';
       toast.error(errorMessage);
     }
   };
@@ -154,7 +202,12 @@ export const Receivables: React.FC = () => {
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleEdit(receivable)}
-                      className="px-3 py-1 text-blue-600 hover:text-blue-900 text-sm border border-blue-600 rounded"
+                      disabled={receivable.status === 'RECEIVED'}
+                      className={`px-3 py-1 text-sm border rounded ${
+                        receivable.status === 'RECEIVED'
+                          ? 'text-gray-400 border-gray-300 cursor-not-allowed'
+                          : 'text-blue-600 hover:text-blue-900 border-blue-600'
+                      }`}
                     >
                       Editar
                     </button>
@@ -189,9 +242,18 @@ export const Receivables: React.FC = () => {
                     <div className="font-medium">{receivable.debtorName}</div>
                     <div className="text-sm text-gray-500">{receivable.description}</div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-bold text-gray-600">{formatCurrency(receivable.totalAmount)}</div>
-                    <div className="text-xs text-gray-500">Recebido em {formatDate(receivable.receivedAt!)}</div>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <div className="font-bold text-gray-600">{formatCurrency(receivable.totalAmount)}</div>
+                      <div className="text-xs text-gray-500">Recebido em {formatDate(receivable.receivedAt!)}</div>
+                    </div>
+                    <button
+                      onClick={() => handleUnmarkReceived(receivable.id)}
+                      className="px-3 py-1 text-orange-600 hover:text-orange-900 text-sm border border-orange-600 rounded"
+                      title="Reabrir recebível"
+                    >
+                      Reabrir
+                    </button>
                   </div>
                 </div>
               ))}
@@ -272,6 +334,83 @@ export const Receivables: React.FC = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Confirmação */}
+        {confirmModal.show && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+              <div className="flex items-center mb-4">
+                <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${
+                  confirmModal.type === 'markReceived'
+                    ? 'bg-green-100'
+                    : confirmModal.type === 'unmarkReceived'
+                    ? 'bg-orange-100'
+                    : 'bg-red-100'
+                }`}>
+                  {confirmModal.type === 'markReceived' ? (
+                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  ) : confirmModal.type === 'unmarkReceived' ? (
+                    <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  ) : (
+                    <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  )}
+                </div>
+                <h3 className="ml-3 text-lg font-medium text-gray-900">
+                  {confirmModal.type === 'markReceived' && 'Confirmar Recebimento'}
+                  {confirmModal.type === 'unmarkReceived' && 'Reabrir Recebível'}
+                  {confirmModal.type === 'delete' && 'Confirmar Exclusão'}
+                </h3>
+              </div>
+              <div className="mt-4">
+                <p className="text-sm text-gray-500">
+                  {confirmModal.type === 'markReceived' && confirmModal.receivable && (
+                    <>Tem certeza que deseja marcar o recebível de <strong>{confirmModal.receivable.debtorName}</strong> no valor de <strong>{formatCurrency(confirmModal.receivable.totalAmount)}</strong> como recebido?</>
+                  )}
+                  {confirmModal.type === 'unmarkReceived' && confirmModal.receivable && (
+                    <>Tem certeza que deseja reabrir o recebível de <strong>{confirmModal.receivable.debtorName}</strong>?</>
+                  )}
+                  {confirmModal.type === 'delete' && confirmModal.receivable && (
+                    <>Tem certeza que deseja excluir o recebível de <strong>{confirmModal.receivable.debtorName}</strong>? Esta ação não pode ser desfeita.</>
+                  )}
+                </p>
+              </div>
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setConfirmModal({ show: false, type: null })}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (confirmModal.type === 'markReceived') confirmMarkReceived();
+                    else if (confirmModal.type === 'unmarkReceived') confirmUnmarkReceived();
+                    else if (confirmModal.type === 'delete') confirmDelete();
+                  }}
+                  className={`px-4 py-2 rounded-md text-white ${
+                    confirmModal.type === 'markReceived'
+                      ? 'bg-green-600 hover:bg-green-700'
+                      : confirmModal.type === 'unmarkReceived'
+                      ? 'bg-orange-600 hover:bg-orange-700'
+                      : 'bg-red-600 hover:bg-red-700'
+                  }`}
+                >
+                  {confirmModal.type === 'markReceived' && 'Confirmar Recebimento'}
+                  {confirmModal.type === 'unmarkReceived' && 'Reabrir'}
+                  {confirmModal.type === 'delete' && 'Excluir'}
+                </button>
+              </div>
             </div>
           </div>
         )}

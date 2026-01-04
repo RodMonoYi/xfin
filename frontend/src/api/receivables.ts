@@ -44,5 +44,10 @@ export const receivablesApi = {
     const response = await api.patch(`/api/v1/receivables/${id}/mark-received`);
     return response.data;
   },
+
+  unmarkReceived: async (id: string): Promise<Receivable> => {
+    const response = await api.patch(`/api/v1/receivables/${id}/unmark-received`);
+    return response.data;
+  },
 };
 

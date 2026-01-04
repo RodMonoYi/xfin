@@ -52,5 +52,10 @@ export const debtsApi = {
     const response = await api.patch(`/api/v1/debts/${id}/mark-paid`);
     return response.data;
   },
+
+  unmarkPaid: async (id: string): Promise<Debt> => {
+    const response = await api.patch(`/api/v1/debts/${id}/unmark-paid`);
+    return response.data;
+  },
 };
 

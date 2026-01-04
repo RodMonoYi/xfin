@@ -9,4 +9,5 @@ receivablesRouter.post('/', authenticate, receivablesController.create.bind(rece
 receivablesRouter.put('/:id', authenticate, receivablesController.update.bind(receivablesController));
 receivablesRouter.delete('/:id', authenticate, receivablesController.delete.bind(receivablesController));
 receivablesRouter.patch('/:id/mark-received', authenticate, receivablesController.markReceived.bind(receivablesController));
+receivablesRouter.patch('/:id/unmark-received', authenticate, receivablesController.unmarkReceived.bind(receivablesController));
 

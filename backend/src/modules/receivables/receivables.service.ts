@@ -60,6 +60,11 @@ export class ReceivablesService {
       throw new Error('Recebível não encontrado');
     }
 
+    // Bloquear edição se estiver recebido
+    if (receivable.status === ReceivableStatus.RECEIVED) {
+      throw new Error('Não é possível editar um recebível que já foi recebido. Reabra o recebível primeiro.');
+    }
+
     const updateData: any = {};
     if (data.debtorName) updateData.debtorName = data.debtorName;
     if (data.description !== undefined) updateData.description = data.description;
@@ -108,6 +113,32 @@ export class ReceivablesService {
       data: {
         status: ReceivableStatus.RECEIVED,
         receivedAt: new Date(),
+      },
+    });
+  }
+
+  async unmarkReceived(userId: string, id: string) {
+    const receivable = await prisma.receivable.findFirst({
+      where: { id, userId },
+    });
+
+    if (!receivable) {
+      throw new Error('Recebível não encontrado');
+    }
+
+    if (receivable.status !== ReceivableStatus.RECEIVED) {
+      throw new Error('Este recebível não está marcado como recebido');
+    }
+
+    // Determinar o status correto baseado na data de vencimento
+    const now = new Date();
+    const status = receivable.dueDate < now ? ReceivableStatus.OVERDUE : ReceivableStatus.OPEN;
+
+    return prisma.receivable.update({
+      where: { id },
+      data: {
+        status,
+        receivedAt: null,
       },
     });
   }

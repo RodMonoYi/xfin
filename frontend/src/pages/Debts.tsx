@@ -25,6 +25,12 @@ export const Debts: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Debt | null>(null);
+  const [confirmModal, setConfirmModal] = useState<{
+    show: boolean;
+    type: 'markPaid' | 'unmarkPaid' | 'delete' | 'create' | null;
+    debt?: Debt;
+    amount?: number;
+  }>({ show: false, type: null });
 
   const { register, handleSubmit, reset, watch, formState: { errors } } = useForm<DebtFormData>({
     resolver: zodResolver(debtSchema),
@@ -55,16 +61,21 @@ export const Debts: React.FC = () => {
   const onSubmit = async (data: DebtFormData) => {
     try {
       if (editing) {
+        if (editing.status === 'PAID') {
+          toast.error('Não é possível editar uma dívida que já foi paga. Reabra a dívida primeiro.');
+          return;
+        }
         await debtsApi.update(editing.id, data);
         toast.success('Dívida atualizada com sucesso!');
+        reset();
+        setShowModal(false);
+        setEditing(null);
+        loadData();
       } else {
-        await debtsApi.create(data);
-        toast.success('Dívida criada com sucesso!');
+        setConfirmModal({ show: true, type: 'create', amount: data.totalAmount });
+        // Salvar dados temporariamente para usar após confirmação
+        (window as any).__pendingDebtData = data;
       }
-      reset();
-      setShowModal(false);
-      setEditing(null);
-      loadData();
     } catch (error: any) {
       console.error('Erro ao salvar dívida:', error);
       const errorMessage = error?.response?.data?.error || error?.message || 'Erro ao salvar dívida. Verifique os dados e tente novamente.';
@@ -72,7 +83,30 @@ export const Debts: React.FC = () => {
     }
   };
 
+  const confirmCreate = async () => {
+    const data = (window as any).__pendingDebtData;
+    if (!data) return;
+    try {
+      await debtsApi.create(data);
+      toast.success('Dívida criada com sucesso!');
+      setConfirmModal({ show: false, type: null });
+      reset();
+      setShowModal(false);
+      setEditing(null);
+      (window as any).__pendingDebtData = null;
+      loadData();
+    } catch (error: any) {
+      console.error('Erro ao criar dívida:', error);
+      const errorMessage = error?.response?.data?.error || error?.message || 'Erro ao criar dívida. Verifique os dados e tente novamente.';
+      toast.error(errorMessage);
+    }
+  };
+
   const handleEdit = (debt: Debt) => {
+    if (debt.status === 'PAID') {
+      toast.error('Não é possível editar uma dívida que já foi paga. Reabra a dívida primeiro.');
+      return;
+    }
     setEditing(debt);
     reset({
       creditorName: debt.creditorName,
@@ -87,11 +121,18 @@ export const Debts: React.FC = () => {
     setShowModal(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir esta dívida?')) return;
+  const handleDelete = (id: string) => {
+    const debt = debts.find(d => d.id === id);
+    if (!debt) return;
+    setConfirmModal({ show: true, type: 'delete', debt });
+  };
+
+  const confirmDelete = async () => {
+    if (!confirmModal.debt) return;
     try {
-      await debtsApi.delete(id);
+      await debtsApi.delete(confirmModal.debt.id);
       toast.success('Dívida excluída com sucesso!');
+      setConfirmModal({ show: false, type: null });
       loadData();
     } catch (error: any) {
       console.error('Erro ao excluir dívida:', error);
@@ -100,14 +141,42 @@ export const Debts: React.FC = () => {
     }
   };
 
-  const handleMarkPaid = async (id: string) => {
+  const handleMarkPaid = (id: string) => {
+    const debt = debts.find(d => d.id === id);
+    if (!debt) return;
+    setConfirmModal({ show: true, type: 'markPaid', debt });
+  };
+
+  const confirmMarkPaid = async () => {
+    if (!confirmModal.debt) return;
     try {
-      await debtsApi.markPaid(id);
+      await debtsApi.markPaid(confirmModal.debt.id);
       toast.success('Dívida marcada como paga!');
+      setConfirmModal({ show: false, type: null });
       loadData();
     } catch (error: any) {
       console.error('Erro ao marcar como paga:', error);
       const errorMessage = error?.response?.data?.error || error?.message || 'Erro ao marcar dívida como paga. Tente novamente.';
+      toast.error(errorMessage);
+    }
+  };
+
+  const handleUnmarkPaid = (id: string) => {
+    const debt = debts.find(d => d.id === id);
+    if (!debt) return;
+    setConfirmModal({ show: true, type: 'unmarkPaid', debt });
+  };
+
+  const confirmUnmarkPaid = async () => {
+    if (!confirmModal.debt) return;
+    try {
+      await debtsApi.unmarkPaid(confirmModal.debt.id);
+      toast.success('Dívida reaberta com sucesso!');
+      setConfirmModal({ show: false, type: null });
+      loadData();
+    } catch (error: any) {
+      console.error('Erro ao reabrir dívida:', error);
+      const errorMessage = error?.response?.data?.error || error?.message || 'Erro ao reabrir dívida. Tente novamente.';
       toast.error(errorMessage);
     }
   };
@@ -168,7 +237,12 @@ export const Debts: React.FC = () => {
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleEdit(debt)}
-                      className="px-3 py-1 text-blue-600 hover:text-blue-900 text-sm border border-blue-600 rounded"
+                      disabled={debt.status === 'PAID'}
+                      className={`px-3 py-1 text-sm border rounded ${
+                        debt.status === 'PAID'
+                          ? 'text-gray-400 border-gray-300 cursor-not-allowed'
+                          : 'text-blue-600 hover:text-blue-900 border-blue-600'
+                      }`}
                     >
                       Editar
                     </button>
@@ -203,9 +277,18 @@ export const Debts: React.FC = () => {
                     <div className="font-medium">{debt.creditorName}</div>
                     <div className="text-sm text-gray-500">{debt.description}</div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-bold text-gray-600">{formatCurrency(debt.totalAmount)}</div>
-                    <div className="text-xs text-gray-500">Paga em {formatDate(debt.paidAt!)}</div>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <div className="font-bold text-gray-600">{formatCurrency(debt.totalAmount)}</div>
+                      <div className="text-xs text-gray-500">Paga em {formatDate(debt.paidAt!)}</div>
+                    </div>
+                    <button
+                      onClick={() => handleUnmarkPaid(debt.id)}
+                      className="px-3 py-1 text-orange-600 hover:text-orange-900 text-sm border border-orange-600 rounded"
+                      title="Reabrir dívida"
+                    >
+                      Reabrir
+                    </button>
                   </div>
                 </div>
               ))}
@@ -330,6 +413,94 @@ export const Debts: React.FC = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Confirmação */}
+        {confirmModal.show && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+              <div className="flex items-center mb-4">
+                <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${
+                  confirmModal.type === 'markPaid' || confirmModal.type === 'create'
+                    ? 'bg-green-100'
+                    : confirmModal.type === 'unmarkPaid'
+                    ? 'bg-orange-100'
+                    : 'bg-red-100'
+                }`}>
+                  {confirmModal.type === 'markPaid' || confirmModal.type === 'create' ? (
+                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  ) : confirmModal.type === 'unmarkPaid' ? (
+                    <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  ) : (
+                    <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  )}
+                </div>
+                <h3 className="ml-3 text-lg font-medium text-gray-900">
+                  {confirmModal.type === 'markPaid' && 'Confirmar Pagamento'}
+                  {confirmModal.type === 'unmarkPaid' && 'Reabrir Dívida'}
+                  {confirmModal.type === 'delete' && 'Confirmar Exclusão'}
+                  {confirmModal.type === 'create' && 'Confirmar Cadastro'}
+                </h3>
+              </div>
+              <div className="mt-4">
+                <p className="text-sm text-gray-500">
+                  {confirmModal.type === 'markPaid' && confirmModal.debt && (
+                    <>Tem certeza que deseja marcar a dívida de <strong>{confirmModal.debt.creditorName}</strong> no valor de <strong>{formatCurrency(confirmModal.debt.totalAmount)}</strong> como paga?</>
+                  )}
+                  {confirmModal.type === 'unmarkPaid' && confirmModal.debt && (
+                    <>Tem certeza que deseja reabrir a dívida de <strong>{confirmModal.debt.creditorName}</strong>?</>
+                  )}
+                  {confirmModal.type === 'delete' && confirmModal.debt && (
+                    <>Tem certeza que deseja excluir a dívida de <strong>{confirmModal.debt.creditorName}</strong>? Esta ação não pode ser desfeita.</>
+                  )}
+                  {confirmModal.type === 'create' && confirmModal.amount && (
+                    <>Tem certeza que deseja cadastrar uma nova dívida no valor de <strong>{formatCurrency(confirmModal.amount)}</strong>?</>
+                  )}
+                </p>
+              </div>
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConfirmModal({ show: false, type: null });
+                    if (confirmModal.type === 'create') {
+                      (window as any).__pendingDebtData = null;
+                    }
+                  }}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (confirmModal.type === 'markPaid') confirmMarkPaid();
+                    else if (confirmModal.type === 'unmarkPaid') confirmUnmarkPaid();
+                    else if (confirmModal.type === 'delete') confirmDelete();
+                    else if (confirmModal.type === 'create') confirmCreate();
+                  }}
+                  className={`px-4 py-2 rounded-md text-white ${
+                    confirmModal.type === 'markPaid' || confirmModal.type === 'create'
+                      ? 'bg-green-600 hover:bg-green-700'
+                      : confirmModal.type === 'unmarkPaid'
+                      ? 'bg-orange-600 hover:bg-orange-700'
+                      : 'bg-red-600 hover:bg-red-700'
+                  }`}
+                >
+                  {confirmModal.type === 'markPaid' && 'Confirmar Pagamento'}
+                  {confirmModal.type === 'unmarkPaid' && 'Reabrir'}
+                  {confirmModal.type === 'delete' && 'Excluir'}
+                  {confirmModal.type === 'create' && 'Confirmar Cadastro'}
+                </button>
+              </div>
             </div>
           </div>
         )}

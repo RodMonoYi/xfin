@@ -47,6 +47,15 @@ export class DebtsController {
       res.status(400).json({ error: error.message });
     }
   }
+
+  async unmarkPaid(req: AuthRequest, res: Response) {
+    try {
+      const debt = await debtsService.unmarkPaid(req.userId!, req.params.id);
+      res.json(debt);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  }
 }
 
 export const debtsController = new DebtsController();

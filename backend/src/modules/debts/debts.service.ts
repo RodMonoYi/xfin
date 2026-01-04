@@ -72,6 +72,11 @@ export class DebtsService {
       throw new Error('Dívida não encontrada');
     }
 
+    // Bloquear edição se estiver paga
+    if (debt.status === DebtStatus.PAID) {
+      throw new Error('Não é possível editar uma dívida que já foi paga. Reabra a dívida primeiro.');
+    }
+
     const updateData: any = {};
     if (data.creditorName) updateData.creditorName = data.creditorName;
     if (data.description !== undefined) updateData.description = data.description;
@@ -124,6 +129,32 @@ export class DebtsService {
       data: {
         status: DebtStatus.PAID,
         paidAt: new Date(),
+      },
+    });
+  }
+
+  async unmarkPaid(userId: string, id: string) {
+    const debt = await prisma.debt.findFirst({
+      where: { id, userId },
+    });
+
+    if (!debt) {
+      throw new Error('Dívida não encontrada');
+    }
+
+    if (debt.status !== DebtStatus.PAID) {
+      throw new Error('Esta dívida não está marcada como paga');
+    }
+
+    // Determinar o status correto baseado na data de vencimento
+    const now = new Date();
+    const status = debt.dueDate < now ? DebtStatus.OVERDUE : DebtStatus.OPEN;
+
+    return prisma.debt.update({
+      where: { id },
+      data: {
+        status,
+        paidAt: null,
       },
     });
   }
