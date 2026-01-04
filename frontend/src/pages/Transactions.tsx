@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import { transactionsApi, Transaction, CreateTransactionData } from '../api/transactions';
 import { categoriesApi, Category } from '../api/categories';
 import { Layout } from '../components/Layout';
@@ -29,9 +30,11 @@ export const Transactions: React.FC = () => {
   const [editing, setEditing] = useState<Transaction | null>(null);
   const [filterType, setFilterType] = useState<'all' | 'INCOME' | 'EXPENSE'>('all');
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<TransactionFormData>({
+  const { register, handleSubmit, reset, watch, formState: { errors } } = useForm<TransactionFormData>({
     resolver: zodResolver(transactionSchema),
   });
+
+  const watchType = watch('type');
 
   useEffect(() => {
     loadData();
@@ -45,8 +48,9 @@ export const Transactions: React.FC = () => {
       ]);
       setTransactions(transactionsData);
       setCategories(categoriesData);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao carregar dados:', error);
+      toast.error('Erro ao carregar transações. Tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -60,15 +64,19 @@ export const Transactions: React.FC = () => {
     try {
       if (editing) {
         await transactionsApi.update(editing.id, data);
+        toast.success('Transação atualizada com sucesso!');
       } else {
         await transactionsApi.create(data);
+        toast.success('Transação criada com sucesso!');
       }
       reset();
       setShowModal(false);
       setEditing(null);
       loadData();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao salvar transação:', error);
+      const errorMessage = error?.response?.data?.error || error?.message || 'Erro ao salvar transação. Verifique os dados e tente novamente.';
+      toast.error(errorMessage);
     }
   };
 
@@ -92,9 +100,12 @@ export const Transactions: React.FC = () => {
     if (!confirm('Tem certeza que deseja excluir esta transação?')) return;
     try {
       await transactionsApi.delete(id);
+      toast.success('Transação excluída com sucesso!');
       loadData();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao excluir transação:', error);
+      const errorMessage = error?.response?.data?.error || error?.message || 'Erro ao excluir transação. Tente novamente.';
+      toast.error(errorMessage);
     }
   };
 

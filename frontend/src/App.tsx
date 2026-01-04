@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { AuthProvider, useAuth } from './auth/AuthContext';
 import { ProtectedRoute } from './routes/ProtectedRoute';
 import { OnboardingRoute } from './routes/OnboardingRoute';
@@ -11,6 +13,8 @@ import { Recurring } from './pages/Recurring';
 import { Debts } from './pages/Debts';
 import { Receivables } from './pages/Receivables';
 import { Wishlist } from './pages/Wishlist';
+import { PiggyBanks } from './pages/PiggyBanks';
+import { PiggyBankDetails } from './pages/PiggyBankDetails';
 
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
@@ -111,6 +115,22 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/piggy-banks"
+        element={
+          <ProtectedRoute>
+            <PiggyBanks />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/piggy-banks/:id"
+        element={
+          <ProtectedRoute>
+            <PiggyBankDetails />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
@@ -121,6 +141,18 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <AppRoutes />
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
       </AuthProvider>
     </BrowserRouter>
   );

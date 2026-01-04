@@ -2,6 +2,7 @@ import api from './axios';
 
 export interface RecurringIncome {
   id: string;
+  name: string;
   amount: number;
   dayOfMonth: number;
   startDate: string;
@@ -14,6 +15,7 @@ export interface RecurringIncome {
 
 export interface RecurringExpense {
   id: string;
+  name: string;
   amount: number;
   dayOfMonth: number;
   startDate: string;
@@ -25,6 +27,7 @@ export interface RecurringExpense {
 }
 
 export interface CreateRecurringData {
+  name: string;
   amount: number;
   dayOfMonth: number;
   startDate: string;

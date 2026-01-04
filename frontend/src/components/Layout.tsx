@@ -24,6 +24,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     { path: '/debts', label: 'Dívidas', icon: '💳' },
     { path: '/receivables', label: 'A Receber', icon: '📥' },
     { path: '/wishlist', label: 'Lista de Desejos', icon: '🎯' },
+    { path: '/piggy-banks', label: 'Caixinhas', icon: '🐷' },
   ];
 
   const isActive = (path: string) => location.pathname === path;

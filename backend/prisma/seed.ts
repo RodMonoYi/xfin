@@ -206,6 +206,7 @@ async function main() {
   if (recurringIncomesCount === 0) {
     await prisma.recurringIncome.create({
       data: {
+        name: 'Salário',
         amount: 5000.00,
         dayOfMonth: 5,
         startDate: new Date(),
@@ -225,6 +226,7 @@ async function main() {
   if (recurringExpensesCount === 0) {
     await prisma.recurringExpense.create({
       data: {
+        name: 'Aluguel',
         amount: 1200.00,
         dayOfMonth: 10,
         startDate: new Date(),

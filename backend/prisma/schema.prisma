@@ -25,6 +25,7 @@ model User {
   debts          Debt[]
   receivables    Receivable[]
   wishlistItems  WishlistItem[]
+  piggyBanks     PiggyBank[]
 
   @@map("users")
 }
@@ -101,6 +102,7 @@ enum PaymentMethod {
 
 model RecurringIncome {
   id          String    @id @default(uuid())
+  name        String
   amount      Decimal   @db.Decimal(10, 2)
   dayOfMonth  Int       @map("day_of_month")
   startDate   DateTime  @map("start_date")
@@ -117,6 +119,7 @@ model RecurringIncome {
 
 model RecurringExpense {
   id          String    @id @default(uuid())
+  name        String
   amount      Decimal   @db.Decimal(10, 2)
   dayOfMonth  Int       @map("day_of_month")
   startDate   DateTime  @map("start_date")
@@ -214,5 +217,49 @@ enum WishlistStatus {
   PLANNED
   BOUGHT
   DROPPED
+}
+
+model PiggyBank {
+  id              String                @id @default(uuid())
+  name            String
+  description     String?               @map("description")
+  photoUrl        String?               @map("photo_url")
+  currentAmount   Decimal               @default(0) @map("current_amount") @db.Decimal(10, 2)
+  targetAmount    Decimal?              @map("target_amount") @db.Decimal(10, 2)
+  amountPerPeriod Decimal               @map("amount_per_period") @db.Decimal(10, 2)
+  periodType      PiggyBankPeriodType   @map("period_type")
+  userId          String                @map("user_id")
+  createdAt       DateTime              @default(now()) @map("created_at")
+  updatedAt       DateTime              @updatedAt @map("updated_at")
+
+  user        User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions PiggyBankTransaction[]
+
+  @@map("piggy_banks")
+}
+
+enum PiggyBankPeriodType {
+  DAY
+  WEEK
+  FORTNIGHT
+  MONTH
+}
+
+model PiggyBankTransaction {
+  id          String              @id @default(uuid())
+  piggyBankId String              @map("piggy_bank_id")
+  amount      Decimal             @db.Decimal(10, 2)
+  type        PiggyBankTransType
+  description String?
+  createdAt   DateTime            @default(now()) @map("created_at")
+
+  piggyBank PiggyBank @relation(fields: [piggyBankId], references: [id], onDelete: Cascade)
+
+  @@map("piggy_bank_transactions")
+}
+
+enum PiggyBankTransType {
+  DEPOSIT
+  WITHDRAWAL
 }
 

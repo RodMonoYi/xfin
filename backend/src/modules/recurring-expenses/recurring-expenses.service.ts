@@ -9,6 +9,7 @@ export class RecurringExpensesService {
   }
 
   async create(userId: string, data: {
+    name: string;
     amount: number;
     dayOfMonth: number;
     startDate: string;
@@ -17,6 +18,7 @@ export class RecurringExpensesService {
   }) {
     return prisma.recurringExpense.create({
       data: {
+        name: data.name,
         amount: data.amount,
         dayOfMonth: data.dayOfMonth,
         startDate: new Date(data.startDate),
@@ -28,6 +30,7 @@ export class RecurringExpensesService {
   }
 
   async update(userId: string, id: string, data: {
+    name?: string;
     amount?: number;
     dayOfMonth?: number;
     startDate?: string;
@@ -43,6 +46,7 @@ export class RecurringExpensesService {
     }
 
     const updateData: any = {};
+    if (data.name !== undefined) updateData.name = data.name;
     if (data.amount !== undefined) updateData.amount = data.amount;
     if (data.dayOfMonth !== undefined) updateData.dayOfMonth = data.dayOfMonth;
     if (data.startDate) updateData.startDate = new Date(data.startDate);
