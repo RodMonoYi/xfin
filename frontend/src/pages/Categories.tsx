@@ -120,8 +120,14 @@ export const Categories: React.FC = () => {
     ? categories
     : categories.filter(c => c.type === filterType);
 
-  const expenseCategories = filteredCategories.filter(c => c.type === 'EXPENSE');
-  const incomeCategories = filteredCategories.filter(c => c.type === 'INCOME');
+  // Separar categorias personalizadas das padrão
+  const customCategories = filteredCategories.filter(c => !c.isDefault);
+  const defaultCategories = filteredCategories.filter(c => c.isDefault);
+
+  const customExpenseCategories = customCategories.filter(c => c.type === 'EXPENSE');
+  const customIncomeCategories = customCategories.filter(c => c.type === 'INCOME');
+  const defaultExpenseCategories = defaultCategories.filter(c => c.type === 'EXPENSE');
+  const defaultIncomeCategories = defaultCategories.filter(c => c.type === 'INCOME');
 
   if (loading) {
     return (
@@ -167,13 +173,11 @@ export const Categories: React.FC = () => {
           </button>
         </div>
 
-        {/* Categorias de Saída */}
+        {/* Categorias Personalizadas - Saída */}
         {filterType === 'EXPENSE' || filterType === 'all' ? (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-700 mb-4">Categorias de Saída</h2>
-            {expenseCategories.length === 0 ? (
-              <p className="text-gray-500">Nenhuma categoria de saída cadastrada.</p>
-            ) : (
+          customExpenseCategories.length > 0 && (
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-lg font-semibold text-gray-700 mb-4">Suas Categorias de Saída</h2>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
@@ -190,13 +194,10 @@ export const Categories: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {expenseCategories.map((category) => (
+                    {customExpenseCategories.map((category) => (
                       <tr key={category.id}>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">{category.name}</div>
-                          {category.isDefault && (
-                            <div className="text-xs text-gray-500">Padrão</div>
-                          )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
@@ -204,42 +205,33 @@ export const Categories: React.FC = () => {
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          {!category.isDefault && (
-                            <>
-                              <button
-                                onClick={() => handleEdit(category)}
-                                className="text-blue-600 hover:text-blue-900 mr-4"
-                              >
-                                Editar
-                              </button>
-                              <button
-                                onClick={() => handleDelete(category.id)}
-                                className="text-red-600 hover:text-red-900"
-                              >
-                                Excluir
-                              </button>
-                            </>
-                          )}
-                          {category.isDefault && (
-                            <span className="text-gray-400">-</span>
-                          )}
+                          <button
+                            onClick={() => handleEdit(category)}
+                            className="text-blue-600 hover:text-blue-900 mr-4"
+                          >
+                            Editar
+                          </button>
+                          <button
+                            onClick={() => handleDelete(category.id)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            Excluir
+                          </button>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-            )}
-          </div>
+            </div>
+          )
         ) : null}
 
-        {/* Categorias de Entrada */}
+        {/* Categorias Personalizadas - Entrada */}
         {filterType === 'INCOME' || filterType === 'all' ? (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-700 mb-4">Categorias de Entrada</h2>
-            {incomeCategories.length === 0 ? (
-              <p className="text-gray-500">Nenhuma categoria de entrada cadastrada.</p>
-            ) : (
+          customIncomeCategories.length > 0 && (
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-lg font-semibold text-gray-700 mb-4">Suas Categorias de Entrada</h2>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
@@ -256,13 +248,10 @@ export const Categories: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {incomeCategories.map((category) => (
+                    {customIncomeCategories.map((category) => (
                       <tr key={category.id}>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">{category.name}</div>
-                          {category.isDefault && (
-                            <div className="text-xs text-gray-500">Padrão</div>
-                          )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
@@ -270,33 +259,116 @@ export const Categories: React.FC = () => {
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          {!category.isDefault && (
-                            <>
-                              <button
-                                onClick={() => handleEdit(category)}
-                                className="text-blue-600 hover:text-blue-900 mr-4"
-                              >
-                                Editar
-                              </button>
-                              <button
-                                onClick={() => handleDelete(category.id)}
-                                className="text-red-600 hover:text-red-900"
-                              >
-                                Excluir
-                              </button>
-                            </>
-                          )}
-                          {category.isDefault && (
-                            <span className="text-gray-400">-</span>
-                          )}
+                          <button
+                            onClick={() => handleEdit(category)}
+                            className="text-blue-600 hover:text-blue-900 mr-4"
+                          >
+                            Editar
+                          </button>
+                          <button
+                            onClick={() => handleDelete(category.id)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            Excluir
+                          </button>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-            )}
-          </div>
+            </div>
+          )
+        ) : null}
+
+        {/* Categorias Padrão - Saída */}
+        {filterType === 'EXPENSE' || filterType === 'all' ? (
+          defaultExpenseCategories.length > 0 && (
+            <div className="bg-white rounded-lg shadow p-6 border-t-4 border-gray-300">
+              <h2 className="text-lg font-semibold text-gray-700 mb-2">Categorias Padrão de Saída</h2>
+              <p className="text-sm text-gray-500 mb-4">Categorias pré-definidas do sistema (não podem ser editadas ou excluídas)</p>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Nome
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Tipo
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Ações
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {defaultExpenseCategories.map((category) => (
+                      <tr key={category.id} className="bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">{category.name}</div>
+                          <div className="text-xs text-gray-500">Padrão</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                            Saída
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <span className="text-gray-400">-</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )
+        ) : null}
+
+        {/* Categorias Padrão - Entrada */}
+        {filterType === 'INCOME' || filterType === 'all' ? (
+          defaultIncomeCategories.length > 0 && (
+            <div className="bg-white rounded-lg shadow p-6 border-t-4 border-gray-300">
+              <h2 className="text-lg font-semibold text-gray-700 mb-2">Categorias Padrão de Entrada</h2>
+              <p className="text-sm text-gray-500 mb-4">Categorias pré-definidas do sistema (não podem ser editadas ou excluídas)</p>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Nome
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Tipo
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Ações
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {defaultIncomeCategories.map((category) => (
+                      <tr key={category.id} className="bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">{category.name}</div>
+                          <div className="text-xs text-gray-500">Padrão</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                            Entrada
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <span className="text-gray-400">-</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )
         ) : null}
 
         {/* Modal de Categoria */}

@@ -31,6 +31,7 @@ interface CategoryExpense {
 
 type SortField = 'date' | 'createdAt' | 'amount' | 'category';
 type SortDirection = 'asc' | 'desc';
+type DateRange = 'all' | '7days' | '30days' | 'custom';
 
 export const Transactions: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -41,6 +42,11 @@ export const Transactions: React.FC = () => {
   const [filterType, setFilterType] = useState<'all' | 'INCOME' | 'EXPENSE'>('all');
   const [sortField, setSortField] = useState<SortField>('date');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [dateRange, setDateRange] = useState<DateRange>('all');
+  const [customStartDate, setCustomStartDate] = useState<string>('');
+  const [customEndDate, setCustomEndDate] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(20);
 
   const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<TransactionFormData>({
     resolver: zodResolver(transactionSchema),
@@ -55,14 +61,54 @@ export const Transactions: React.FC = () => {
     loadData();
   }, []);
 
+  const getDateFilters = () => {
+    const filters: { startDate?: string; endDate?: string } = {};
+    
+    if (dateRange === 'all') {
+      return filters;
+    }
+    
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    
+    if (dateRange === '7days') {
+      const startDate = new Date(today);
+      startDate.setDate(startDate.getDate() - 7);
+      startDate.setHours(0, 0, 0, 0);
+      filters.startDate = startDate.toISOString().split('T')[0];
+      filters.endDate = today.toISOString().split('T')[0];
+    } else if (dateRange === '30days') {
+      const startDate = new Date(today);
+      startDate.setDate(startDate.getDate() - 30);
+      startDate.setHours(0, 0, 0, 0);
+      filters.startDate = startDate.toISOString().split('T')[0];
+      filters.endDate = today.toISOString().split('T')[0];
+    } else if (dateRange === 'custom') {
+      if (customStartDate) {
+        filters.startDate = customStartDate;
+      }
+      if (customEndDate) {
+        filters.endDate = customEndDate;
+      }
+    }
+    
+    return filters;
+  };
+
   const loadData = async () => {
     try {
+      setLoading(true);
+      const dateFilters = getDateFilters();
+      const typeFilter = filterType !== 'all' ? { type: filterType } : {};
+      const filters = { ...dateFilters, ...typeFilter };
+      
       const [transactionsData, categoriesData] = await Promise.all([
-        transactionsApi.list(filterType !== 'all' ? { type: filterType } : undefined),
+        transactionsApi.list(filters),
         categoriesApi.list(),
       ]);
       setTransactions(transactionsData);
       setCategories(categoriesData);
+      setCurrentPage(1); // Reset to first page when filters change
     } catch (error: any) {
       console.error('Erro ao carregar dados:', error);
       toast.error('Erro ao carregar transações. Tente novamente.');
@@ -73,7 +119,7 @@ export const Transactions: React.FC = () => {
 
   useEffect(() => {
     loadData();
-  }, [filterType]);
+  }, [filterType, dateRange, customStartDate, customEndDate]);
 
   const onSubmit = async (data: TransactionFormData) => {
     try {
@@ -193,6 +239,11 @@ export const Transactions: React.FC = () => {
 
   const categoryExpenses = calculateCategoryExpenses();
 
+  // Paginação
+  const totalPages = Math.ceil(transactions.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+
   // Função para ordenar transações
   const sortedTransactions = [...transactions].sort((a, b) => {
     let aValue: any;
@@ -223,6 +274,14 @@ export const Transactions: React.FC = () => {
     if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
     return 0;
   });
+
+  // Aplicar paginação após ordenação
+  const paginatedTransactions = sortedTransactions.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -293,25 +352,64 @@ export const Transactions: React.FC = () => {
           </button>
         </div>
 
-        <div className="flex gap-2">
-          <button
-            onClick={() => setFilterType('all')}
-            className={`px-4 py-2 rounded-lg ${filterType === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-          >
-            Todas
-          </button>
-          <button
-            onClick={() => setFilterType('INCOME')}
-            className={`px-4 py-2 rounded-lg ${filterType === 'INCOME' ? 'bg-green-600 text-white' : 'bg-gray-200'}`}
-          >
-            Entradas
-          </button>
-          <button
-            onClick={() => setFilterType('EXPENSE')}
-            className={`px-4 py-2 rounded-lg ${filterType === 'EXPENSE' ? 'bg-red-600 text-white' : 'bg-gray-200'}`}
-          >
-            Saídas
-          </button>
+        <div className="flex flex-wrap gap-4 items-end">
+          <div className="flex gap-2">
+            <button
+              onClick={() => setFilterType('all')}
+              className={`px-4 py-2 rounded-lg ${filterType === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+            >
+              Todas
+            </button>
+            <button
+              onClick={() => setFilterType('INCOME')}
+              className={`px-4 py-2 rounded-lg ${filterType === 'INCOME' ? 'bg-green-600 text-white' : 'bg-gray-200'}`}
+            >
+              Entradas
+            </button>
+            <button
+              onClick={() => setFilterType('EXPENSE')}
+              className={`px-4 py-2 rounded-lg ${filterType === 'EXPENSE' ? 'bg-red-600 text-white' : 'bg-gray-200'}`}
+            >
+              Saídas
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-gray-700">Período</label>
+            <select
+              value={dateRange}
+              onChange={(e) => setDateRange(e.target.value as DateRange)}
+              className="px-4 py-2 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="all">Todas</option>
+              <option value="7days">Últimos 7 dias</option>
+              <option value="30days">Últimos 30 dias</option>
+              <option value="custom">Personalizado</option>
+            </select>
+          </div>
+
+          {dateRange === 'custom' && (
+            <div className="flex gap-2">
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-gray-700">Data Inicial</label>
+                <input
+                  type="date"
+                  value={customStartDate}
+                  onChange={(e) => setCustomStartDate(e.target.value)}
+                  className="px-4 py-2 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-gray-700">Data Final</label>
+                <input
+                  type="date"
+                  value={customEndDate}
+                  onChange={(e) => setCustomEndDate(e.target.value)}
+                  className="px-4 py-2 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Gráfico de Gastos por Categoria */}
@@ -386,14 +484,14 @@ export const Transactions: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {sortedTransactions.length === 0 ? (
+              {paginatedTransactions.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
                     Nenhuma transação encontrada
                   </td>
                 </tr>
               ) : (
-                sortedTransactions.map((transaction) => (
+                paginatedTransactions.map((transaction) => (
                   <tr key={transaction.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {formatDate(transaction.date)}
@@ -431,6 +529,81 @@ export const Transactions: React.FC = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Paginação */}
+        {sortedTransactions.length > 0 && (
+          <div className="bg-white rounded-lg shadow p-4 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-700">
+                Mostrando {startIndex + 1} a {Math.min(endIndex, sortedTransactions.length)} de {sortedTransactions.length} transações
+              </span>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => {
+                  setItemsPerPage(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+                className="px-3 py-1 rounded border border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="10">10 por página</option>
+                <option value="20">20 por página</option>
+                <option value="50">50 por página</option>
+                <option value="100">100 por página</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className={`px-3 py-1 rounded border ${
+                  currentPage === 1
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'
+                }`}
+              >
+                Anterior
+              </button>
+              <div className="flex gap-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum: number;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => handlePageChange(pageNum)}
+                      className={`px-3 py-1 rounded border ${
+                        currentPage === pageNum
+                          ? 'bg-blue-600 text-white border-blue-600'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className={`px-3 py-1 rounded border ${
+                  currentPage === totalPages
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'
+                }`}
+              >
+                Próxima
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Modal de Transação */}
         {showModal && (

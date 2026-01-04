@@ -88,7 +88,7 @@ export const Dashboard: React.FC = () => {
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-lg font-semibold text-gray-700 mb-4">Saldo Atual</h2>
           <div className="text-4xl font-bold text-gray-900 mb-2">
-            {valuesVisible ? formatCurrency(summary.currentBalance) : '••••••'}
+            {valuesVisible ? formatCurrency(summary.currentBalance) : 'R$ ••••••'}
           </div>
           <div className={`text-sm ${evolutionColor}`}>
             {valuesVisible ? (
@@ -97,7 +97,7 @@ export const Dashboard: React.FC = () => {
                 {formatCurrency(summary.balanceEvolution)} desde o início
               </>
             ) : (
-              '•••••• desde o início'
+              'R$ •••••• desde o início'
             )}
           </div>
         </div>
@@ -123,32 +123,32 @@ export const Dashboard: React.FC = () => {
               </button>
             </div>
             <div className={`text-4xl font-bold mb-4 ${completeBalanceColor}`}>
-              {valuesVisible ? formatCurrency(completeBalance) : '••••••'}
+              {valuesVisible ? formatCurrency(completeBalance) : 'R$ ••••••'}
             </div>
             {balanceExpanded && (
               <div className="text-sm text-gray-600 space-y-1 animate-fadeIn">
                 <div className="flex justify-between">
                   <span>Saldo Atual:</span>
                   <span className="font-medium">
-                    {valuesVisible ? formatCurrency(summary.currentBalance) : '••••••'}
+                    {valuesVisible ? formatCurrency(summary.currentBalance) : 'R$ ••••••'}
                   </span>
                 </div>
                 <div className="flex justify-between text-orange-600">
                   <span>- Dívidas em Aberto:</span>
                   <span className="font-medium">
-                    {valuesVisible ? formatCurrency(summary.totalDebts) : '••••••'}
+                    {valuesVisible ? formatCurrency(summary.totalDebts) : 'R$ ••••••'}
                   </span>
                 </div>
                 <div className="flex justify-between text-blue-600">
                   <span>+ A Receber:</span>
                   <span className="font-medium">
-                    {valuesVisible ? formatCurrency(summary.totalReceivables) : '••••••'}
+                    {valuesVisible ? formatCurrency(summary.totalReceivables) : 'R$ ••••••'}
                   </span>
                 </div>
                 <div className="pt-2 mt-2 border-t border-gray-300 flex justify-between font-semibold">
                   <span>Balanço Final:</span>
                   <span className={completeBalanceColor}>
-                    {valuesVisible ? formatCurrency(completeBalance) : '••••••'}
+                    {valuesVisible ? formatCurrency(completeBalance) : 'R$ ••••••'}
                   </span>
                 </div>
               </div>
@@ -161,25 +161,25 @@ export const Dashboard: React.FC = () => {
           <div className="bg-white rounded-lg shadow p-4">
             <div className="text-sm text-gray-600">Total de Entradas</div>
             <div className="text-2xl font-bold text-green-600">
-              {valuesVisible ? formatCurrency(summary.totalIncome) : '••••••'}
+              {valuesVisible ? formatCurrency(summary.totalIncome) : 'R$ ••••••'}
             </div>
           </div>
           <div className="bg-white rounded-lg shadow p-4">
             <div className="text-sm text-gray-600">Total de Saídas</div>
             <div className="text-2xl font-bold text-red-600">
-              {valuesVisible ? formatCurrency(summary.totalExpenses) : '••••••'}
+              {valuesVisible ? formatCurrency(summary.totalExpenses) : 'R$ ••••••'}
             </div>
           </div>
           <div className="bg-white rounded-lg shadow p-4">
             <div className="text-sm text-gray-600">Dívidas Abertas</div>
             <div className="text-2xl font-bold text-orange-600">
-              {valuesVisible ? formatCurrency(summary.totalDebts) : '••••••'}
+              {valuesVisible ? formatCurrency(summary.totalDebts) : 'R$ ••••••'}
             </div>
           </div>
           <div className="bg-white rounded-lg shadow p-4">
             <div className="text-sm text-gray-600">A Receber</div>
             <div className="text-2xl font-bold text-blue-600">
-              {valuesVisible ? formatCurrency(summary.totalReceivables) : '••••••'}
+              {valuesVisible ? formatCurrency(summary.totalReceivables) : 'R$ ••••••'}
             </div>
           </div>
         </div>
@@ -191,19 +191,19 @@ export const Dashboard: React.FC = () => {
             <div>
               <div className="text-sm text-gray-600">Entradas</div>
               <div className="text-xl font-bold text-green-600">
-                {valuesVisible ? formatCurrency(summary.monthIncome) : '••••••'}
+                {valuesVisible ? formatCurrency(summary.monthIncome) : 'R$ ••••••'}
               </div>
             </div>
             <div>
               <div className="text-sm text-gray-600">Saídas</div>
               <div className="text-xl font-bold text-red-600">
-                {valuesVisible ? formatCurrency(summary.monthExpense) : '••••••'}
+                {valuesVisible ? formatCurrency(summary.monthExpense) : 'R$ ••••••'}
               </div>
             </div>
             <div>
               <div className="text-sm text-gray-600">Projeção do Mês</div>
               <div className={`text-xl font-bold ${projectionColor}`}>
-                {valuesVisible ? formatCurrency(summary.monthProjection) : '••••••'}
+                {valuesVisible ? formatCurrency(summary.monthProjection) : 'R$ ••••••'}
               </div>
             </div>
           </div>
@@ -216,13 +216,13 @@ export const Dashboard: React.FC = () => {
             <div>
               <div className="text-sm text-gray-600">Ganhos Fixos</div>
               <div className="text-xl font-bold text-green-600">
-                {valuesVisible ? formatCurrency(summary.totalRecurringIncome) : '••••••'}
+                {valuesVisible ? formatCurrency(summary.totalRecurringIncome) : 'R$ ••••••'}
               </div>
             </div>
             <div>
               <div className="text-sm text-gray-600">Gastos Fixos</div>
               <div className="text-xl font-bold text-red-600">
-                {valuesVisible ? formatCurrency(summary.totalRecurringExpense) : '••••••'}
+                {valuesVisible ? formatCurrency(summary.totalRecurringExpense) : 'R$ ••••••'}
               </div>
             </div>
           </div>
@@ -244,7 +244,7 @@ export const Dashboard: React.FC = () => {
                         </div>
                       </div>
                       <div className="font-semibold text-orange-600">
-                        {valuesVisible ? formatCurrency(debt.totalAmount) : '••••••'}
+                        {valuesVisible ? formatCurrency(debt.totalAmount) : 'R$ ••••••'}
                       </div>
                     </div>
                   ))}
@@ -265,7 +265,7 @@ export const Dashboard: React.FC = () => {
                         </div>
                       </div>
                       <div className="font-semibold text-blue-600">
-                        {valuesVisible ? formatCurrency(receivable.totalAmount) : '••••••'}
+                        {valuesVisible ? formatCurrency(receivable.totalAmount) : 'R$ ••••••'}
                       </div>
                     </div>
                   ))}
