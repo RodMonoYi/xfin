@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 
@@ -8,6 +8,7 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [transactionsExpanded, setTransactionsExpanded] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -19,7 +20,15 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: '📊' },
-    { path: '/transactions', label: 'Transações', icon: '💰' },
+    { 
+      path: '/transactions', 
+      label: 'Transações', 
+      icon: '💰',
+      submenu: [
+        { path: '/transactions', label: 'Listar Transações' },
+        { path: '/categories', label: 'Gerenciar Categorias' },
+      ]
+    },
     { path: '/recurring', label: 'Fixos e Estimados', icon: '📅' },
     { path: '/debts', label: 'Dívidas', icon: '💳' },
     { path: '/receivables', label: 'A Receber', icon: '📥' },
@@ -28,6 +37,13 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   ];
 
   const isActive = (path: string) => location.pathname === path;
+  const isTransactionsActive = location.pathname === '/transactions' || location.pathname === '/categories';
+
+  useEffect(() => {
+    if (isTransactionsActive) {
+      setTransactionsExpanded(true);
+    }
+  }, [location.pathname]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -57,21 +73,68 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
 
           <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                onClick={() => setSidebarOpen(false)}
-                className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                  isActive(item.path)
-                    ? 'bg-blue-100 text-blue-700 font-semibold'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <span className="text-xl">{item.icon}</span>
-                <span>{item.label}</span>
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              if (item.submenu) {
+                return (
+                  <div key={item.path}>
+                    <button
+                      onClick={() => setTransactionsExpanded(!transactionsExpanded)}
+                      className={`w-full flex items-center justify-between space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                        isTransactionsActive
+                          ? 'bg-blue-100 text-blue-700 font-semibold'
+                          : 'text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <span className="text-xl">{item.icon}</span>
+                        <span>{item.label}</span>
+                      </div>
+                      <svg
+                        className={`w-4 h-4 transition-transform ${transactionsExpanded ? 'transform rotate-180' : ''}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    {transactionsExpanded && (
+                      <div className="ml-8 mt-1 space-y-1">
+                        {item.submenu.map((subItem) => (
+                          <Link
+                            key={subItem.path}
+                            to={subItem.path}
+                            onClick={() => setSidebarOpen(false)}
+                            className={`block px-4 py-2 rounded-lg transition-colors ${
+                              isActive(subItem.path)
+                                ? 'bg-blue-100 text-blue-700 font-semibold'
+                                : 'text-gray-600 hover:bg-gray-100'
+                            }`}
+                          >
+                            {subItem.label}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                    isActive(item.path)
+                      ? 'bg-blue-100 text-blue-700 font-semibold'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <span className="text-xl">{item.icon}</span>
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
           </nav>
 
           <div className="p-4 border-t">

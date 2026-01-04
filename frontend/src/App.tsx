@@ -15,6 +15,7 @@ import { Receivables } from './pages/Receivables';
 import { Wishlist } from './pages/Wishlist';
 import { PiggyBanks } from './pages/PiggyBanks';
 import { PiggyBankDetails } from './pages/PiggyBankDetails';
+import { Categories } from './pages/Categories';
 
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
@@ -80,6 +81,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Transactions />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/categories"
+        element={
+          <ProtectedRoute>
+            <Categories />
           </ProtectedRoute>
         }
       />
