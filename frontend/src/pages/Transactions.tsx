@@ -345,7 +345,7 @@ export const Transactions: React.FC = () => {
     <Layout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Transações</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Transações</h1>
           <button
             onClick={handleNewTransaction}
             className={`px-4 py-2 text-white rounded-lg ${getButtonColor()}`}
@@ -377,7 +377,7 @@ export const Transactions: React.FC = () => {
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-gray-700">Período</label>
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Período</label>
             <select
               value={dateRange}
               onChange={(e) => setDateRange(e.target.value as DateRange)}
@@ -417,14 +417,14 @@ export const Transactions: React.FC = () => {
         {/* Gráfico de Gastos por Categoria */}
         {filterType === 'EXPENSE' || filterType === 'all' ? (
           categoryExpenses.length > 0 && (
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold text-gray-700 mb-4">Gastos por Categoria</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">Gastos por Categoria</h2>
               <div className="space-y-4">
                 {categoryExpenses.map((item) => (
                   <div key={item.categoryId}>
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm font-medium text-gray-700">{item.categoryName}</span>
-                      <span className="text-sm font-semibold text-gray-900">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{item.categoryName}</span>
+                      <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                         {formatCurrency(item.total)} ({item.percentage.toFixed(1)}%)
                       </span>
                     </div>
@@ -534,9 +534,9 @@ export const Transactions: React.FC = () => {
 
         {/* Paginação */}
         {sortedTransactions.length > 0 && (
-          <div className="bg-white rounded-lg shadow p-4 flex items-center justify-between">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-700">
+              <span className="text-sm text-gray-700 dark:text-gray-300 dark:text-gray-100">
                 Mostrando {startIndex + 1} a {Math.min(endIndex, sortedTransactions.length)} de {sortedTransactions.length} transações
               </span>
               <select
@@ -545,7 +545,7 @@ export const Transactions: React.FC = () => {
                   setItemsPerPage(Number(e.target.value));
                   setCurrentPage(1);
                 }}
-                className="px-3 py-1 rounded border border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500"
+                className="px-3 py-1 rounded border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 text-sm focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="10">10 por página</option>
                 <option value="20">20 por página</option>
@@ -557,10 +557,10 @@ export const Transactions: React.FC = () => {
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className={`px-3 py-1 rounded border ${
+                className={`px-3 py-1 rounded border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 text-sm focus:ring-blue-500 focus:border-blue-500 hover:bg-gray-50 dark:hover:bg-gray-700 ${
                   currentPage === 1
                     ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'
+                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 border-gray-300 dark:border-gray-700'
                 }`}
               >
                 Anterior

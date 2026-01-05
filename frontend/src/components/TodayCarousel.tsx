@@ -48,14 +48,14 @@ export const TodayCarousel: React.FC<TodayCarouselProps> = ({
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <h2 className="text-2xl font-bold text-gray-900">Atualizações do Dia!</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Atualizações do Dia!</h2>
             </div>
           </div>
         </div>
 
         {/* Empty State Card */}
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 md:p-8 text-center">
-          <p className="text-gray-600 text-base">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6 md:p-8 text-center">
+          <p className="text-gray-600 dark:text-gray-400 text-base">
             Nada pendente para hoje
           </p>
         </div>
@@ -98,9 +98,9 @@ export const TodayCarousel: React.FC<TodayCarouselProps> = ({
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <h2 className="text-2xl font-bold text-gray-900">Atualizações do Dia!</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Atualizações do Dia!</h2>
           </div>
-          <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+          <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-full text-sm font-medium">
             {items.length} {items.length === 1 ? 'pendência' : 'pendências'}
           </span>
         </div>
@@ -108,19 +108,19 @@ export const TodayCarousel: React.FC<TodayCarouselProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={prevSlide}
-              className="p-2 rounded-full bg-white shadow-md hover:bg-gray-50 transition-colors"
+              className="p-2 rounded-full bg-white dark:bg-gray-800 shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               aria-label="Anterior"
             >
-              <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
             <button
               onClick={nextSlide}
-              className="p-2 rounded-full bg-white shadow-md hover:bg-gray-50 transition-colors"
+              className="p-2 rounded-full bg-white dark:bg-gray-800 shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               aria-label="Próximo"
             >
-              <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
@@ -156,8 +156,8 @@ export const TodayCarousel: React.FC<TodayCarouselProps> = ({
               onClick={() => goToSlide(index)}
               className={`h-2 rounded-full transition-all duration-300 ${
                 index === currentIndex
-                  ? 'bg-blue-600 w-8'
-                  : 'bg-gray-300 w-2 hover:bg-gray-400'
+                  ? 'bg-blue-600 dark:bg-blue-500 w-8'
+                  : 'bg-gray-300 dark:bg-gray-600 w-2 hover:bg-gray-400 dark:hover:bg-gray-500'
               }`}
               aria-label={`Ir para slide ${index + 1}`}
             />

@@ -218,10 +218,10 @@ export const Debts: React.FC = () => {
     <Layout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Dívidas</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Dívidas</h1>
           <button
             onClick={() => setShowModal(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="px-4 py-2 bg-blue-600 text-white dark:text-gray-100 dark:bg-gray-800 rounded-lg hover:bg-blue-700"
           >
             Nova Dívida
           </button>

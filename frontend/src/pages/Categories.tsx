@@ -145,10 +145,10 @@ export const Categories: React.FC = () => {
     <Layout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Gerenciar Categorias</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Gerenciar Categorias</h1>
           <button
             onClick={handleNewCategory}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="px-4 py-2 bg-blue-600 text-white dark:text-gray-100 dark:bg-gray-800 rounded-lg hover:bg-blue-700"
           >
             Nova Categoria
           </button>
@@ -157,19 +157,19 @@ export const Categories: React.FC = () => {
         <div className="flex gap-2">
           <button
             onClick={() => setFilterType('all')}
-            className={`px-4 py-2 rounded-lg ${filterType === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+            className={`px-4 py-2 rounded-lg ${filterType === 'all' ? 'bg-blue-600 text-white dark:text-gray-100 dark:bg-gray-800' : 'bg-gray-200 dark:bg-gray-700 dark:text-gray-300'}`}
           >
             Todas
           </button>
           <button
             onClick={() => setFilterType('INCOME')}
-            className={`px-4 py-2 rounded-lg ${filterType === 'INCOME' ? 'bg-green-600 text-white' : 'bg-gray-200'}`}
+            className={`px-4 py-2 rounded-lg ${filterType === 'INCOME' ? 'bg-green-600 text-white dark:text-gray-100 dark:bg-gray-800' : 'bg-gray-200 dark:bg-gray-700 dark:text-gray-300'}`}
           >
             Entradas
           </button>
           <button
             onClick={() => setFilterType('EXPENSE')}
-            className={`px-4 py-2 rounded-lg ${filterType === 'EXPENSE' ? 'bg-red-600 text-white' : 'bg-gray-200'}`}
+            className={`px-4 py-2 rounded-lg ${filterType === 'EXPENSE' ? 'bg-red-600 text-white dark:text-gray-100 dark:bg-gray-800' : 'bg-gray-200 dark:bg-gray-700 dark:text-gray-300'}`}
           >
             Saídas
           </button>

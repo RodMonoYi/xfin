@@ -269,10 +269,10 @@ export const PiggyBanks: React.FC = () => {
     <Layout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Caixinhas</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100  transition-colors">Caixinhas</h1>
           <button
             onClick={() => setShowModal(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="px-4 py-2 bg-blue-600 text-white dark:text-gray-100 dark:bg-gray-800 transition-colors hover:text-gray-900 dark:hover:text-gray-100 transition-colors rounded-lg hover:bg-blue-700"
           >
             Nova Caixinha
           </button>
@@ -296,7 +296,7 @@ export const PiggyBanks: React.FC = () => {
               return (
                 <div 
                   key={piggyBank.id} 
-                  className="bg-white rounded-lg shadow overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+                  className="bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors rounded-lg shadow overflow-hidden cursor-pointer hover:shadow-lg transition-shadow hover:bg-gray-50 dark:hover:border-blue-600 hover:border-2 hover:border-blue-600 hover:text-gray-900 dark:hover:text-gray-100 transition-colors hover:shadow-lg transition-shadow"
                   onClick={() => handleViewDetails(piggyBank)}
                 >
                   {piggyBank.photoUrl && (
@@ -314,27 +314,27 @@ export const PiggyBanks: React.FC = () => {
                   )}
                   <div className="p-6">
                     <div className="flex justify-between items-start mb-4">
-                      <h3 className="text-lg font-semibold text-gray-900">{piggyBank.name}</h3>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 transition-colors hover:text-gray-900 dark:hover:text-gray-100">{piggyBank.name}</h3>
                       <div className="relative" ref={(el) => (menuRefs.current[piggyBank.id] = el)}>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             setOpenMenuId(openMenuId === piggyBank.id ? null : piggyBank.id);
                           }}
-                          className="text-gray-500 hover:text-gray-700 p-1"
+                          className="text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors p-1"
                         >
                           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
                           </svg>
                         </button>
                         {openMenuId === piggyBank.id && (
-                          <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+                          <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors rounded-md shadow-lg z-10 border border-gray-200 dark:border-gray-700">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleViewDetails(piggyBank);
                               }}
-                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
                             >
                               Ver Detalhes
                             </button>
@@ -343,7 +343,7 @@ export const PiggyBanks: React.FC = () => {
                                 e.stopPropagation();
                                 handleEdit(piggyBank);
                               }}
-                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
                             >
                               Editar
                             </button>
@@ -353,7 +353,7 @@ export const PiggyBanks: React.FC = () => {
                                 handleDelete(piggyBank.id);
                                 setOpenMenuId(null);
                               }}
-                              className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                              className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-700"
                             >
                               Excluir
                             </button>
@@ -363,13 +363,13 @@ export const PiggyBanks: React.FC = () => {
                     </div>
 
                     {piggyBank.description && (
-                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">{piggyBank.description}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors mb-3 line-clamp-2">{piggyBank.description}</p>
                     )}
 
                     <div className="space-y-3">
                       <div>
-                        <div className="text-sm text-gray-600">Valor Atual</div>
-                        <div className="text-2xl font-bold text-green-600">
+                        <div className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">Valor Atual</div>
+                        <div className="text-2xl font-bold text-green-600 dark:text-green-400 transition-colors hover:text-green-800 dark:hover:text-green-200">
                           {formatCurrency(Number(piggyBank.currentAmount))}
                         </div>
                       </div>
@@ -377,25 +377,25 @@ export const PiggyBanks: React.FC = () => {
                       {piggyBank.targetAmount && (
                         <div>
                           <div className="flex justify-between text-sm mb-1">
-                            <span className="text-gray-600">Meta</span>
-                            <span className="text-gray-600">
+                            <span className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">Meta</span>
+                            <span className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
                               {formatCurrency(Number(piggyBank.currentAmount))} / {formatCurrency(Number(piggyBank.targetAmount))}
                             </span>
                           </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                             <div
                               className="bg-blue-600 h-2 rounded-full transition-all"
                               style={{ width: `${Math.min(progress, 100)}%` }}
                             ></div>
                           </div>
                           {estimatedTime && (
-                            <div className="text-xs text-gray-500 mt-1">{estimatedTime}</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors mt-1">{estimatedTime}</div>
                           )}
                         </div>
                       )}
 
-                      <div className="text-sm text-gray-600">
-                        <span className="font-medium">{formatCurrency(Number(piggyBank.amountPerPeriod))}</span>
+                      <div className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
+                        <span className="font-medium dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">{formatCurrency(Number(piggyBank.amountPerPeriod))}</span>
                         {' '}por {getPeriodLabel(piggyBank.periodType)}
                       </div>
 
@@ -405,7 +405,7 @@ export const PiggyBanks: React.FC = () => {
                             e.stopPropagation();
                             handleAddTransaction(piggyBank);
                           }}
-                          className="flex-1 px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
+                          className="flex-1 px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
                         >
                           Adicionar
                         </button>
@@ -414,7 +414,7 @@ export const PiggyBanks: React.FC = () => {
                             e.stopPropagation();
                             handleViewDetails(piggyBank);
                           }}
-                          className="flex-1 px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                          className="flex-1 px-3 py-2 bg-gray-300 text-gray-700 dark:text-gray-300 dark:bg-gray-500 rounded hover:bg-gray-400 text-sm"
                         >
                           Ver Detalhes
                         </button>

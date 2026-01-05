@@ -214,12 +214,12 @@ export const Recurring: React.FC = () => {
     <Layout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Fixos e Estimados</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100  ">Fixos e Estimados</h1>
           <div className="flex gap-2">
             {activeTab === 'expenses' && expenses.length > 0 && (
               <button
                 onClick={handleCreateAllExpensesAsTransactions}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                className="px-4 py-2 bg-green-600 text-white dark:text-gray-100 dark:bg-gray-800 rounded-lg hover:bg-green-700"
                 title="Lançar todos os gastos fixos ativos como transações"
               >
                 Lançar Todos os Gastos
@@ -228,7 +228,7 @@ export const Recurring: React.FC = () => {
             {activeTab === 'incomes' && incomes.length > 0 && (
               <button
                 onClick={handleCreateAllIncomesAsTransactions}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                className="px-4 py-2 bg-green-600 text-white dark:text-gray-100 dark:bg-gray-800 rounded-lg hover:bg-green-700"
                 title="Lançar todos os ganhos fixos ativos como transações"
               >
                 Lançar Todos os Ganhos
@@ -236,7 +236,7 @@ export const Recurring: React.FC = () => {
             )}
             <button
               onClick={() => setShowModal(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="px-4 py-2 bg-blue-600 text-white dark:text-gray-100 dark:bg-gray-800 rounded-lg hover:bg-blue-700"
             >
               Novo {activeTab === 'incomes' ? 'Ganho Fixo' : 'Gasto Fixo'}
             </button>
@@ -244,15 +244,15 @@ export const Recurring: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-sm text-gray-600">Total Ganhos Fixos</div>
+          <div className="bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors rounded-lg shadow p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
+            <div className="text-sm ">Total Ganhos Fixos</div>
             <div className="text-2xl font-bold text-green-600">{formatCurrency(totalIncomes)}</div>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors rounded-lg shadow p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
             <div className="text-sm text-gray-600">Total Gastos Fixos</div>
             <div className="text-2xl font-bold text-red-600">{formatCurrency(totalExpenses)}</div>
           </div>
-          <div className={`bg-white rounded-lg shadow p-4 ${projection >= 0 ? 'border-green-500 border-2' : 'border-red-500 border-2'}`}>
+          <div className={`bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors rounded-lg shadow p-4 hover:bg-gray-50 dark:hover:bg-gray-700 ${projection >= 0 ? 'border-green-500 border-2' : 'border-red-500 border-2'}`}>
             <div className="text-sm text-gray-600">Projeção Mensal</div>
             <div className={`text-2xl font-bold ${projection >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {formatCurrency(projection)}

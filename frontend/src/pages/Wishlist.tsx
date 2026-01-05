@@ -203,15 +203,15 @@ export const Wishlist: React.FC = () => {
     <Layout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Lista de Desejos</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100  transition-colors">Lista de Desejos</h1>
           <div className="flex items-center gap-4">
-            <div className="bg-blue-50 px-4 py-2 rounded-lg">
-              <div className="text-sm text-gray-600">Total Estimado</div>
-              <div className="text-xl font-bold text-blue-600">{formatCurrency(totalEstimated)}</div>
+            <div className="bg-blue-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors rounded-lg shadow p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
+              <div className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">Total Estimado</div>
+              <div className="text-xl font-bold text-blue-600 dark:text-blue-400 transition-colors hover:text-blue-800 dark:hover:text-blue-200">{formatCurrency(totalEstimated)}</div>
             </div>
             <button
               onClick={() => setShowModal(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="px-4 py-2 bg-blue-600 text-white dark:text-gray-100 dark:bg-gray-800 transition-colors rounded-lg hover:bg-blue-700"
             >
               Novo Item
             </button>
