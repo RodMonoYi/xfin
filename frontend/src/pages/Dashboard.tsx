@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import { dashboardApi, DashboardSummary } from '../api/dashboard';
 import { Layout } from '../components/Layout';
 import { formatCurrency } from '../utils/format';
+import { transactionsApi } from '../api/transactions';
+import { categoriesApi } from '../api/categories';
+import { debtsApi } from '../api/debts';
+import { receivablesApi } from '../api/receivables';
 
 export const Dashboard: React.FC = () => {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
@@ -9,10 +14,76 @@ export const Dashboard: React.FC = () => {
   const [error, setError] = useState('');
   const [balanceExpanded, setBalanceExpanded] = useState(true);
   const [valuesVisible, setValuesVisible] = useState(true);
+  const [processingDebt, setProcessingDebt] = useState<string | null>(null);
+  const [processingReceivable, setProcessingReceivable] = useState<string | null>(null);
 
   useEffect(() => {
     loadSummary();
   }, []);
+
+  const handleCreateTransactionFromDebt = async (debt: any) => {
+    setProcessingDebt(debt.id);
+    try {
+      const categories = await categoriesApi.list();
+      const expenseCategory = categories.find(c => c.type === 'EXPENSE');
+      
+      if (!expenseCategory) {
+        toast.error('Nenhuma categoria de despesa encontrada');
+        return;
+      }
+
+      const now = new Date().toISOString().split('T')[0];
+      await transactionsApi.create({
+        type: 'EXPENSE',
+        amount: debt.totalAmount,
+        date: now,
+        description: debt.description || `Pagamento: ${debt.creditorName}`,
+        categoryId: expenseCategory.id,
+      });
+
+      // Marcar dívida como paga
+      await debtsApi.markPaid(debt.id);
+
+      toast.success('Transação criada e dívida marcada como paga!');
+      loadSummary();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao criar transação');
+    } finally {
+      setProcessingDebt(null);
+    }
+  };
+
+  const handleCreateTransactionFromReceivable = async (receivable: any) => {
+    setProcessingReceivable(receivable.id);
+    try {
+      const categories = await categoriesApi.list();
+      const incomeCategory = categories.find(c => c.type === 'INCOME');
+      
+      if (!incomeCategory) {
+        toast.error('Nenhuma categoria de receita encontrada');
+        return;
+      }
+
+      const now = new Date().toISOString().split('T')[0];
+      await transactionsApi.create({
+        type: 'INCOME',
+        amount: receivable.totalAmount,
+        date: now,
+        description: receivable.description || `Recebimento: ${receivable.debtorName}`,
+        categoryId: incomeCategory.id,
+      });
+
+      // Marcar recebível como recebido
+      await receivablesApi.markReceived(receivable.id);
+
+      toast.success('Transação criada e recebível marcado como recebido!');
+      loadSummary();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao criar transação');
+    } finally {
+      setProcessingReceivable(null);
+    }
+  };
 
   const loadSummary = async () => {
     try {
@@ -236,15 +307,25 @@ export const Dashboard: React.FC = () => {
                 <h3 className="text-lg font-semibold text-orange-800 mb-4">Dívidas Pendentes</h3>
                 <div className="space-y-2">
                   {summary.pendingDebts.slice(0, 5).map((debt: any) => (
-                    <div key={debt.id} className="flex justify-between items-center">
-                      <div>
+                    <div key={debt.id} className="flex justify-between items-center gap-2">
+                      <div className="flex-1">
                         <div className="font-medium text-gray-900">{debt.creditorName}</div>
                         <div className="text-sm text-gray-600">
                           {new Date(debt.dueDate).toLocaleDateString('pt-BR')}
                         </div>
                       </div>
-                      <div className="font-semibold text-orange-600">
-                        {valuesVisible ? formatCurrency(debt.totalAmount) : 'R$ ••••••'}
+                      <div className="flex items-center gap-2">
+                        <div className="font-semibold text-orange-600">
+                          {valuesVisible ? formatCurrency(debt.totalAmount) : 'R$ ••••••'}
+                        </div>
+                        <button
+                          onClick={() => handleCreateTransactionFromDebt(debt)}
+                          disabled={processingDebt === debt.id}
+                          className="px-2 py-1 text-xs bg-orange-600 text-white rounded hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Lançar como transação"
+                        >
+                          {processingDebt === debt.id ? '...' : 'Lançar'}
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -257,15 +338,25 @@ export const Dashboard: React.FC = () => {
                 <h3 className="text-lg font-semibold text-blue-800 mb-4">Valores a Receber</h3>
                 <div className="space-y-2">
                   {summary.pendingReceivables.slice(0, 5).map((receivable: any) => (
-                    <div key={receivable.id} className="flex justify-between items-center">
-                      <div>
+                    <div key={receivable.id} className="flex justify-between items-center gap-2">
+                      <div className="flex-1">
                         <div className="font-medium text-gray-900">{receivable.debtorName}</div>
                         <div className="text-sm text-gray-600">
                           {new Date(receivable.dueDate).toLocaleDateString('pt-BR')}
                         </div>
                       </div>
-                      <div className="font-semibold text-blue-600">
-                        {valuesVisible ? formatCurrency(receivable.totalAmount) : 'R$ ••••••'}
+                      <div className="flex items-center gap-2">
+                        <div className="font-semibold text-blue-600">
+                          {valuesVisible ? formatCurrency(receivable.totalAmount) : 'R$ ••••••'}
+                        </div>
+                        <button
+                          onClick={() => handleCreateTransactionFromReceivable(receivable)}
+                          disabled={processingReceivable === receivable.id}
+                          className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Lançar como transação"
+                        >
+                          {processingReceivable === receivable.id ? '...' : 'Lançar'}
+                        </button>
                       </div>
                     </div>
                   ))}

@@ -11,7 +11,7 @@ const receivableSchema = z.object({
   debtorName: z.string().min(1, 'Nome do devedor é obrigatório'),
   description: z.string().optional(),
   totalAmount: z.number().min(0.01),
-  dueDate: z.string(),
+  dueDate: z.string().min(1, 'Data de vencimento é obrigatória'),
 });
 
 type ReceivableFormData = z.infer<typeof receivableSchema>;

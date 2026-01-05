@@ -38,6 +38,24 @@ export class RecurringExpensesController {
       res.status(400).json({ error: error.message });
     }
   }
+
+  async createAllAsTransactions(req: AuthRequest, res: Response) {
+    try {
+      const result = await recurringExpensesService.createAllAsTransactions(req.userId!);
+      res.json(result);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  }
+
+  async createTransactionFromExpense(req: AuthRequest, res: Response) {
+    try {
+      const transaction = await recurringExpensesService.createTransactionFromExpense(req.userId!, req.params.id);
+      res.json(transaction);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  }
 }
 
 export const recurringExpensesController = new RecurringExpensesController();

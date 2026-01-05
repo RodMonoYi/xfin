@@ -38,6 +38,24 @@ export class RecurringIncomesController {
       res.status(400).json({ error: error.message });
     }
   }
+
+  async createAllAsTransactions(req: AuthRequest, res: Response) {
+    try {
+      const result = await recurringIncomesService.createAllAsTransactions(req.userId!);
+      res.json(result);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  }
+
+  async createTransactionFromIncome(req: AuthRequest, res: Response) {
+    try {
+      const transaction = await recurringIncomesService.createTransactionFromIncome(req.userId!, req.params.id);
+      res.json(transaction);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  }
 }
 
 export const recurringIncomesController = new RecurringIncomesController();

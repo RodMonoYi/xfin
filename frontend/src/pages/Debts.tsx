@@ -13,8 +13,8 @@ const debtSchema = z.object({
   totalAmount: z.number().min(0.01),
   isRecurring: z.boolean().optional(),
   recurrence: z.enum(['MONTHLY', 'QUARTERLY', 'YEARLY']).optional().nullable(),
-  startDate: z.string(),
-  dueDate: z.string(),
+  startDate: z.string().min(1, 'Data de início é obrigatória'),
+  dueDate: z.string().min(1, 'Data de vencimento é obrigatória'),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH']).optional(),
 });
 

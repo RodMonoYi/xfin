@@ -1,4 +1,5 @@
 import { prisma } from '../../config/database';
+import { TransactionType, CategoryType } from '@prisma/client';
 
 export class RecurringIncomesService {
   async list(userId: string) {
@@ -71,6 +72,105 @@ export class RecurringIncomesService {
     await prisma.recurringIncome.delete({
       where: { id },
     });
+  }
+
+  async createAllAsTransactions(userId: string) {
+    const activeIncomes = await prisma.recurringIncome.findMany({
+      where: {
+        userId,
+        active: true,
+      },
+    });
+
+    if (activeIncomes.length === 0) {
+      return { count: 0 };
+    }
+
+    // Buscar categoria padrão de receita
+    const defaultCategory = await prisma.category.findFirst({
+      where: {
+        type: CategoryType.INCOME,
+        OR: [
+          { isDefault: true },
+          { userId },
+        ],
+      },
+      orderBy: [
+        { isDefault: 'desc' },
+        { name: 'asc' },
+      ],
+    });
+
+    if (!defaultCategory) {
+      throw new Error('Nenhuma categoria de receita encontrada');
+    }
+
+    const now = new Date();
+    const transactions = activeIncomes.map((income: any) => ({
+      type: TransactionType.INCOME,
+      amount: income.amount,
+      date: now,
+      description: income.name,
+      categoryId: defaultCategory.id,
+      userId,
+      isImportant: false,
+    }));
+
+    await prisma.transaction.createMany({
+      data: transactions,
+    });
+
+    return { count: transactions.length };
+  }
+
+  async createTransactionFromIncome(userId: string, incomeId: string) {
+    const income = await prisma.recurringIncome.findFirst({
+      where: {
+        id: incomeId,
+        userId,
+      },
+    });
+
+    if (!income) {
+      throw new Error('Ganho fixo não encontrado');
+    }
+
+    // Buscar categoria padrão de receita
+    const defaultCategory = await prisma.category.findFirst({
+      where: {
+        type: CategoryType.INCOME,
+        OR: [
+          { isDefault: true },
+          { userId },
+        ],
+      },
+      orderBy: [
+        { isDefault: 'desc' },
+        { name: 'asc' },
+      ],
+    });
+
+    if (!defaultCategory) {
+      throw new Error('Nenhuma categoria de receita encontrada');
+    }
+
+    const now = new Date();
+    const transaction = await prisma.transaction.create({
+      data: {
+        type: TransactionType.INCOME,
+        amount: income.amount,
+        date: now,
+        description: income.name,
+        categoryId: defaultCategory.id,
+        userId,
+        isImportant: false,
+      },
+      include: {
+        category: true,
+      },
+    });
+
+    return transaction;
   }
 }
 

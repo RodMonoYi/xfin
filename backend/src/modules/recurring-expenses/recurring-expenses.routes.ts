@@ -8,4 +8,6 @@ recurringExpensesRouter.get('/', authenticate, recurringExpensesController.list.
 recurringExpensesRouter.post('/', authenticate, recurringExpensesController.create.bind(recurringExpensesController));
 recurringExpensesRouter.put('/:id', authenticate, recurringExpensesController.update.bind(recurringExpensesController));
 recurringExpensesRouter.delete('/:id', authenticate, recurringExpensesController.delete.bind(recurringExpensesController));
+recurringExpensesRouter.post('/create-all-transactions', authenticate, recurringExpensesController.createAllAsTransactions.bind(recurringExpensesController));
+recurringExpensesRouter.post('/:id/create-transaction', authenticate, recurringExpensesController.createTransactionFromExpense.bind(recurringExpensesController));
 

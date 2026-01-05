@@ -55,6 +55,16 @@ export const recurringApi = {
     delete: async (id: string): Promise<void> => {
       await api.delete(`/api/v1/recurring-incomes/${id}`);
     },
+
+    createAllAsTransactions: async (): Promise<{ count: number }> => {
+      const response = await api.post('/api/v1/recurring-incomes/create-all-transactions');
+      return response.data;
+    },
+
+    createTransactionFromIncome: async (id: string): Promise<any> => {
+      const response = await api.post(`/api/v1/recurring-incomes/${id}/create-transaction`);
+      return response.data;
+    },
   },
 
   expenses: {
@@ -75,6 +85,16 @@ export const recurringApi = {
 
     delete: async (id: string): Promise<void> => {
       await api.delete(`/api/v1/recurring-expenses/${id}`);
+    },
+
+    createAllAsTransactions: async (): Promise<{ count: number }> => {
+      const response = await api.post('/api/v1/recurring-expenses/create-all-transactions');
+      return response.data;
+    },
+
+    createTransactionFromExpense: async (id: string): Promise<any> => {
+      const response = await api.post(`/api/v1/recurring-expenses/${id}/create-transaction`);
+      return response.data;
     },
   },
 };

@@ -1,5 +1,5 @@
 import { prisma } from '../../config/database';
-import { ReceivableStatus } from '@prisma/client';
+import { ReceivableStatus, TransactionType, CategoryType } from '@prisma/client';
 
 export class ReceivablesService {
   async list(userId: string) {
@@ -108,11 +108,43 @@ export class ReceivablesService {
       throw new Error('Recebível não encontrado');
     }
 
+    // Buscar categoria padrão de receita
+    const defaultCategory = await prisma.category.findFirst({
+      where: {
+        type: CategoryType.INCOME,
+        OR: [
+          { isDefault: true },
+          { userId },
+        ],
+      },
+      orderBy: [
+        { isDefault: 'desc' },
+        { name: 'asc' },
+      ],
+    });
+
+    if (!defaultCategory) {
+      throw new Error('Nenhuma categoria de receita encontrada');
+    }
+
+    // Criar transação automaticamente
+    const now = new Date();
+    await prisma.transaction.create({
+      data: {
+        type: TransactionType.INCOME,
+        amount: receivable.totalAmount,
+        date: now,
+        description: receivable.description || `Recebimento: ${receivable.debtorName}`,
+        categoryId: defaultCategory.id,
+        userId,
+      },
+    });
+
     return prisma.receivable.update({
       where: { id },
       data: {
         status: ReceivableStatus.RECEIVED,
-        receivedAt: new Date(),
+        receivedAt: now,
       },
     });
   }

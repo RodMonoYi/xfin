@@ -25,6 +25,12 @@ export const Recurring: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'incomes' | 'expenses'>('incomes');
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<RecurringIncome | RecurringExpense | null>(null);
+  const [confirmModal, setConfirmModal] = useState<{
+    show: boolean;
+    type: 'createAllExpenses' | 'createOneExpense' | 'createAllIncomes' | 'createOneIncome' | null;
+    expense?: RecurringExpense;
+    income?: RecurringIncome;
+  }>({ show: false, type: null });
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<RecurringFormData>({
     resolver: zodResolver(recurringSchema),
@@ -124,6 +130,74 @@ export const Recurring: React.FC = () => {
   const totalExpenses = expenses.reduce((sum, item) => sum + Number(item.amount), 0);
   const projection = totalIncomes - totalExpenses;
 
+  const handleCreateAllExpensesAsTransactions = () => {
+    const activeExpenses = expenses.filter(e => e.active);
+    if (activeExpenses.length === 0) {
+      toast.info('Não há gastos fixos ativos para lançar');
+      return;
+    }
+    setConfirmModal({ show: true, type: 'createAllExpenses' });
+  };
+
+  const handleCreateOneExpenseAsTransaction = (expense: RecurringExpense) => {
+    setConfirmModal({ show: true, type: 'createOneExpense', expense });
+  };
+
+  const handleCreateAllIncomesAsTransactions = () => {
+    const activeIncomes = incomes.filter(i => i.active);
+    if (activeIncomes.length === 0) {
+      toast.info('Não há ganhos fixos ativos para lançar');
+      return;
+    }
+    setConfirmModal({ show: true, type: 'createAllIncomes' });
+  };
+
+  const handleCreateOneIncomeAsTransaction = (income: RecurringIncome) => {
+    setConfirmModal({ show: true, type: 'createOneIncome', income });
+  };
+
+  const confirmCreateAllExpenses = async () => {
+    try {
+      const result = await recurringApi.expenses.createAllAsTransactions();
+      toast.success(`${result.count} transação(ões) criada(s) com sucesso!`);
+      setConfirmModal({ show: false, type: null });
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao criar transações');
+    }
+  };
+
+  const confirmCreateOneExpense = async () => {
+    if (!confirmModal.expense) return;
+    try {
+      await recurringApi.expenses.createTransactionFromExpense(confirmModal.expense.id);
+      toast.success('Transação criada com sucesso!');
+      setConfirmModal({ show: false, type: null });
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao criar transação');
+    }
+  };
+
+  const confirmCreateAllIncomes = async () => {
+    try {
+      const result = await recurringApi.incomes.createAllAsTransactions();
+      toast.success(`${result.count} transação(ões) criada(s) com sucesso!`);
+      setConfirmModal({ show: false, type: null });
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao criar transações');
+    }
+  };
+
+  const confirmCreateOneIncome = async () => {
+    if (!confirmModal.income) return;
+    try {
+      await recurringApi.incomes.createTransactionFromIncome(confirmModal.income.id);
+      toast.success('Transação criada com sucesso!');
+      setConfirmModal({ show: false, type: null });
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao criar transação');
+    }
+  };
+
   if (loading) {
     return (
       <Layout>
@@ -139,12 +213,32 @@ export const Recurring: React.FC = () => {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-900">Fixos e Estimados</h1>
-          <button
-            onClick={() => setShowModal(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            Novo {activeTab === 'incomes' ? 'Ganho Fixo' : 'Gasto Fixo'}
-          </button>
+          <div className="flex gap-2">
+            {activeTab === 'expenses' && expenses.length > 0 && (
+              <button
+                onClick={handleCreateAllExpensesAsTransactions}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                title="Lançar todos os gastos fixos ativos como transações"
+              >
+                Lançar Todos os Gastos
+              </button>
+            )}
+            {activeTab === 'incomes' && incomes.length > 0 && (
+              <button
+                onClick={handleCreateAllIncomesAsTransactions}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                title="Lançar todos os ganhos fixos ativos como transações"
+              >
+                Lançar Todos os Ganhos
+              </button>
+            )}
+            <button
+              onClick={() => setShowModal(true)}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              Novo {activeTab === 'incomes' ? 'Ganho Fixo' : 'Gasto Fixo'}
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -211,6 +305,13 @@ export const Recurring: React.FC = () => {
                           {item.active ? 'Ativo' : 'Inativo'}
                         </span>
                         <button
+                          onClick={() => handleCreateOneIncomeAsTransaction(item)}
+                          className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700"
+                          title="Lançar como transação"
+                        >
+                          Lançar
+                        </button>
+                        <button
                           onClick={() => handleEdit(item)}
                           className="text-blue-600 hover:text-blue-900 text-sm"
                         >
@@ -246,6 +347,13 @@ export const Recurring: React.FC = () => {
                         <span className={`px-3 py-1 rounded-full text-sm ${item.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
                           {item.active ? 'Ativo' : 'Inativo'}
                         </span>
+                        <button
+                          onClick={() => handleCreateOneExpenseAsTransaction(item)}
+                          className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700"
+                          title="Lançar como transação"
+                        >
+                          Lançar
+                        </button>
                         <button
                           onClick={() => handleEdit(item)}
                           className="text-blue-600 hover:text-blue-900 text-sm"
@@ -368,6 +476,60 @@ export const Recurring: React.FC = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {confirmModal.show && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+              <div className="flex items-center mb-4">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-green-100">
+                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h3 className="ml-3 text-lg font-medium text-gray-900">
+                  {confirmModal.type === 'createAllExpenses' || confirmModal.type === 'createAllIncomes' 
+                    ? 'Confirmar Lançamento em Lote' 
+                    : 'Confirmar Lançamento'}
+                </h3>
+              </div>
+              <div className="mt-4">
+                <p className="text-sm text-gray-500">
+                  {confirmModal.type === 'createAllExpenses' && (
+                    <>Deseja lançar todos os {expenses.filter((e: any) => e.active).length} gastos fixos ativos como transações?</>
+                  )}
+                  {confirmModal.type === 'createOneExpense' && confirmModal.expense && (
+                    <>Deseja lançar o gasto fixo <strong>{confirmModal.expense.name}</strong> no valor de <strong>{formatCurrency(Number(confirmModal.expense.amount))}</strong> como transação?</>
+                  )}
+                  {confirmModal.type === 'createAllIncomes' && (
+                    <>Deseja lançar todos os {incomes.filter((i: any) => i.active).length} ganhos fixos ativos como transações?</>
+                  )}
+                  {confirmModal.type === 'createOneIncome' && confirmModal.income && (
+                    <>Deseja lançar o ganho fixo <strong>{confirmModal.income.name}</strong> no valor de <strong>{formatCurrency(Number(confirmModal.income.amount))}</strong> como transação?</>
+                  )}
+                </p>
+              </div>
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  onClick={() => setConfirmModal({ show: false, type: null })}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => {
+                    if (confirmModal.type === 'createAllExpenses') confirmCreateAllExpenses();
+                    else if (confirmModal.type === 'createOneExpense') confirmCreateOneExpense();
+                    else if (confirmModal.type === 'createAllIncomes') confirmCreateAllIncomes();
+                    else if (confirmModal.type === 'createOneIncome') confirmCreateOneIncome();
+                  }}
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                >
+                  Confirmar
+                </button>
+              </div>
             </div>
           </div>
         )}

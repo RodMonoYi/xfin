@@ -1,5 +1,5 @@
 import { prisma } from '../../config/database';
-import { Priority, DebtStatus, RecurrenceType } from '@prisma/client';
+import { Priority, DebtStatus, RecurrenceType, TransactionType, CategoryType } from '@prisma/client';
 
 export class DebtsService {
   async list(userId: string) {
@@ -124,11 +124,44 @@ export class DebtsService {
       throw new Error('Dívida não encontrada');
     }
 
+    // Buscar categoria padrão de despesa
+    const defaultCategory = await prisma.category.findFirst({
+      where: {
+        type: CategoryType.EXPENSE,
+        OR: [
+          { isDefault: true },
+          { userId },
+        ],
+      },
+      orderBy: [
+        { isDefault: 'desc' },
+        { name: 'asc' },
+      ],
+    });
+
+    if (!defaultCategory) {
+      throw new Error('Nenhuma categoria de despesa encontrada');
+    }
+
+    // Criar transação automaticamente
+    const now = new Date();
+    await prisma.transaction.create({
+      data: {
+        type: TransactionType.EXPENSE,
+        amount: debt.totalAmount,
+        date: now,
+        description: debt.description || `Pagamento: ${debt.creditorName}`,
+        categoryId: defaultCategory.id,
+        userId,
+        isImportant: debt.priority === Priority.HIGH,
+      },
+    });
+
     return prisma.debt.update({
       where: { id },
       data: {
         status: DebtStatus.PAID,
-        paidAt: new Date(),
+        paidAt: now,
       },
     });
   }
