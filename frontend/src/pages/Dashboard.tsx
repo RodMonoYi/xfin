@@ -1,12 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { toast } from 'react-toastify';
 import { dashboardApi, DashboardSummary } from '../api/dashboard';
 import { Layout } from '../components/Layout';
 import { formatCurrency } from '../utils/format';
-import { transactionsApi } from '../api/transactions';
-import { categoriesApi } from '../api/categories';
 import { debtsApi } from '../api/debts';
 import { receivablesApi } from '../api/receivables';
+import { TodayCarousel } from '../components/TodayCarousel';
 
 export const Dashboard: React.FC = () => {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
@@ -16,6 +15,7 @@ export const Dashboard: React.FC = () => {
   const [valuesVisible, setValuesVisible] = useState(true);
   const [processingDebt, setProcessingDebt] = useState<string | null>(null);
   const [processingReceivable, setProcessingReceivable] = useState<string | null>(null);
+  const [processingCarouselIds, setProcessingCarouselIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadSummary();
@@ -97,6 +97,57 @@ export const Dashboard: React.FC = () => {
     }
   };
 
+  // Filtrar pendências do dia - DEVE VIR ANTES DOS EARLY RETURNS (Rules of Hooks)
+  const todayItems = useMemo(() => {
+    if (!summary) return [];
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const items: Array<{
+      id: string;
+      type: 'debt' | 'receivable';
+      name: string;
+      amount: number;
+      dueDate: string;
+      description?: string;
+    }> = [];
+
+    // Dívidas que vencem hoje
+    summary.pendingDebts.forEach((debt: any) => {
+      const dueDate = new Date(debt.dueDate);
+      dueDate.setHours(0, 0, 0, 0);
+      if (dueDate.getTime() === today.getTime()) {
+        items.push({
+          id: debt.id,
+          type: 'debt',
+          name: debt.creditorName,
+          amount: debt.totalAmount,
+          dueDate: debt.dueDate,
+          description: debt.description,
+        });
+      }
+    });
+
+    // Recebíveis que vencem hoje
+    summary.pendingReceivables.forEach((receivable: any) => {
+      const dueDate = new Date(receivable.dueDate);
+      dueDate.setHours(0, 0, 0, 0);
+      if (dueDate.getTime() === today.getTime()) {
+        items.push({
+          id: receivable.id,
+          type: 'receivable',
+          name: receivable.debtorName,
+          amount: receivable.totalAmount,
+          dueDate: receivable.dueDate,
+          description: receivable.description,
+        });
+      }
+    });
+
+    return items;
+  }, [summary]);
+
   if (loading) {
     return (
       <Layout>
@@ -126,9 +177,52 @@ export const Dashboard: React.FC = () => {
   const completeBalance = summary.currentBalance - summary.totalDebts + summary.totalReceivables;
   const completeBalanceColor = completeBalance >= 0 ? 'text-green-600' : 'text-red-600';
 
+  const handleCarouselMarkPaid = async (id: string) => {
+    setProcessingCarouselIds((prev) => new Set(prev).add(id));
+    try {
+      await debtsApi.markPaid(id);
+      toast.success('Transação criada e dívida marcada como paga!');
+      loadSummary();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao processar');
+    } finally {
+      setProcessingCarouselIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }
+  };
+
+  const handleCarouselMarkReceived = async (id: string) => {
+    setProcessingCarouselIds((prev) => new Set(prev).add(id));
+    try {
+      await receivablesApi.markReceived(id);
+      toast.success('Transação criada e recebível marcado como recebido!');
+      loadSummary();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao processar');
+    } finally {
+      setProcessingCarouselIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
+        {/* Carrossel de Atualizações do Dia */}
+        <TodayCarousel
+          items={todayItems}
+          onMarkPaid={handleCarouselMarkPaid}
+          onMarkReceived={handleCarouselMarkReceived}
+          processingIds={processingCarouselIds}
+          valuesVisible={valuesVisible}
+        />
+
         {/* Header com botão de privacidade */}
         <div className="flex justify-end">
           <button

@@ -1,5 +1,6 @@
 import { prisma } from '../../config/database';
 import { ReceivableStatus, TransactionType, CategoryType } from '@prisma/client';
+import { categoriesService } from '../categories/categories.service';
 
 export class ReceivablesService {
   async list(userId: string) {
@@ -31,6 +32,7 @@ export class ReceivablesService {
     description?: string;
     totalAmount: number;
     dueDate: string;
+    categoryId?: string | null;
   }) {
     const status = new Date(data.dueDate) < new Date() ? ReceivableStatus.OVERDUE : ReceivableStatus.OPEN;
 
@@ -41,6 +43,7 @@ export class ReceivablesService {
         totalAmount: data.totalAmount,
         dueDate: new Date(data.dueDate),
         status,
+        categoryId: data.categoryId || null,
         userId,
       },
     });
@@ -51,6 +54,7 @@ export class ReceivablesService {
     description?: string;
     totalAmount?: number;
     dueDate?: string;
+    categoryId?: string | null;
   }) {
     const receivable = await prisma.receivable.findFirst({
       where: { id, userId },
@@ -78,6 +82,7 @@ export class ReceivablesService {
         updateData.status = ReceivableStatus.OPEN;
       }
     }
+    if (data.categoryId !== undefined) updateData.categoryId = data.categoryId;
 
     return prisma.receivable.update({
       where: { id },
@@ -108,23 +113,12 @@ export class ReceivablesService {
       throw new Error('Recebível não encontrado');
     }
 
-    // Buscar categoria padrão de receita
-    const defaultCategory = await prisma.category.findFirst({
-      where: {
-        type: CategoryType.INCOME,
-        OR: [
-          { isDefault: true },
-          { userId },
-        ],
-      },
-      orderBy: [
-        { isDefault: 'desc' },
-        { name: 'asc' },
-      ],
-    });
-
-    if (!defaultCategory) {
-      throw new Error('Nenhuma categoria de receita encontrada');
+    // Usar categoria do recebível ou buscar/criar "Não especificado"
+    let categoryId: string;
+    if (receivable.categoryId) {
+      categoryId = receivable.categoryId;
+    } else {
+      categoryId = await categoriesService.findOrCreateUnspecified(userId, CategoryType.INCOME);
     }
 
     // Criar transação automaticamente
@@ -135,7 +129,7 @@ export class ReceivablesService {
         amount: receivable.totalAmount,
         date: now,
         description: receivable.description || `Recebimento: ${receivable.debtorName}`,
-        categoryId: defaultCategory.id,
+        categoryId,
         userId,
       },
     });

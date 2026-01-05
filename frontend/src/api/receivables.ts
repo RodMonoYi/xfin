@@ -8,6 +8,7 @@ export interface Receivable {
   dueDate: string;
   receivedAt: string | null;
   status: 'OPEN' | 'RECEIVED' | 'OVERDUE';
+  categoryId: string | null;
   userId: string;
   createdAt: string;
   updatedAt: string;
@@ -18,6 +19,7 @@ export interface CreateReceivableData {
   description?: string;
   totalAmount: number;
   dueDate: string;
+  categoryId?: string | null;
 }
 
 export const receivablesApi = {

@@ -53,6 +53,8 @@ model Category {
 
   user         User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions Transaction[]
+  debts        Debt[]
+  receivables  Receivable[]
 
   @@map("categories")
 }
@@ -146,10 +148,12 @@ model Debt {
   paidAt      DateTime?   @map("paid_at")
   priority    Priority    @default(MEDIUM)
   status      DebtStatus  @default(OPEN)
+  categoryId  String?     @map("category_id")
   userId      String      @map("user_id")
   createdAt   DateTime    @default(now()) @map("created_at")
   updatedAt   DateTime    @updatedAt @map("updated_at")
 
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("debts")
@@ -181,10 +185,12 @@ model Receivable {
   dueDate     DateTime          @map("due_date")
   receivedAt  DateTime?         @map("received_at")
   status      ReceivableStatus  @default(OPEN)
+  categoryId  String?           @map("category_id")
   userId      String            @map("user_id")
   createdAt   DateTime          @default(now()) @map("created_at")
   updatedAt   DateTime          @updatedAt @map("updated_at")
 
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("receivables")

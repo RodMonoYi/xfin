@@ -130,7 +130,9 @@ export const Transactions: React.FC = () => {
         await transactionsApi.create(data);
         toast.success('Transação criada com sucesso!');
       }
-      reset();
+      reset({
+        type: 'EXPENSE',
+      });
       setShowModal(false);
       setEditing(null);
       loadData();

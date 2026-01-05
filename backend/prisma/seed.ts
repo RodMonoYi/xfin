@@ -16,10 +16,12 @@ async function main() {
     { name: 'Educação', type: CategoryType.EXPENSE },
     { name: 'Impostos', type: CategoryType.EXPENSE },
     { name: 'Investimentos', type: CategoryType.EXPENSE },
+    { name: 'Não especificado', type: CategoryType.EXPENSE },
     { name: 'Salário', type: CategoryType.INCOME },
     { name: 'Freelance', type: CategoryType.INCOME },
     { name: 'Investimentos', type: CategoryType.INCOME },
     { name: 'Outros', type: CategoryType.INCOME },
+    { name: 'Não especificado', type: CategoryType.INCOME },
   ];
 
   const createdCategories = [];

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { debtsApi, Debt, CreateDebtData } from '../api/debts';
+import { categoriesApi, Category } from '../api/categories';
 import { Layout } from '../components/Layout';
 import { formatCurrency, formatDate } from '../utils/format';
 import { useForm } from 'react-hook-form';
@@ -16,12 +17,14 @@ const debtSchema = z.object({
   startDate: z.string().min(1, 'Data de início é obrigatória'),
   dueDate: z.string().min(1, 'Data de vencimento é obrigatória'),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH']).optional(),
+  categoryId: z.string().optional().nullable(),
 });
 
 type DebtFormData = z.infer<typeof debtSchema>;
 
 export const Debts: React.FC = () => {
   const [debts, setDebts] = useState<Debt[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Debt | null>(null);
@@ -48,8 +51,12 @@ export const Debts: React.FC = () => {
 
   const loadData = async () => {
     try {
-      const data = await debtsApi.list();
-      setDebts(data);
+      const [debtsData, categoriesData] = await Promise.all([
+        debtsApi.list(),
+        categoriesApi.list(),
+      ]);
+      setDebts(debtsData);
+      setCategories(categoriesData);
     } catch (error: any) {
       console.error('Erro ao carregar dívidas:', error);
       toast.error('Erro ao carregar dívidas. Tente novamente.');
@@ -67,7 +74,10 @@ export const Debts: React.FC = () => {
         }
         await debtsApi.update(editing.id, data);
         toast.success('Dívida atualizada com sucesso!');
-        reset();
+        reset({
+          isRecurring: false,
+          priority: 'MEDIUM',
+        });
         setShowModal(false);
         setEditing(null);
         loadData();
@@ -90,7 +100,10 @@ export const Debts: React.FC = () => {
       await debtsApi.create(data);
       toast.success('Dívida criada com sucesso!');
       setConfirmModal({ show: false, type: null });
-      reset();
+      reset({
+        isRecurring: false,
+        priority: 'MEDIUM',
+      });
       setShowModal(false);
       setEditing(null);
       (window as any).__pendingDebtData = null;
@@ -117,6 +130,7 @@ export const Debts: React.FC = () => {
       startDate: debt.startDate.split('T')[0],
       dueDate: debt.dueDate.split('T')[0],
       priority: debt.priority,
+      categoryId: debt.categoryId || null,
     });
     setShowModal(true);
   };
@@ -394,6 +408,23 @@ export const Debts: React.FC = () => {
                     <option value="LOW">Baixa</option>
                     <option value="MEDIUM">Média</option>
                     <option value="HIGH">Alta</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Categoria (para quando lançar como transação)
+                  </label>
+                  <select 
+                    {...register('categoryId')} 
+                    className="mt-1 block w-full border-gray-300 rounded-md px-3 py-2 border"
+                  >
+                    <option value="">Não especificado</option>
+                    {categories
+                      .filter(c => c.type === 'EXPENSE')
+                      .map((cat) => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                      ))}
                   </select>
                 </div>
 

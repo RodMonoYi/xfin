@@ -111,7 +111,9 @@ export const PiggyBanks: React.FC = () => {
     try {
       await piggyBanksApi.addTransaction(selectedPiggyBank.id, data);
       toast.success(data.type === 'DEPOSIT' ? 'Dinheiro adicionado com sucesso!' : 'Dinheiro retirado com sucesso!');
-      resetTransaction();
+      resetTransaction({
+        type: 'DEPOSIT',
+      });
       setShowTransactionModal(false);
       setSelectedPiggyBank(null);
       loadData();

@@ -78,7 +78,9 @@ export const Recurring: React.FC = () => {
           toast.success('Gasto fixo criado com sucesso!');
         }
       }
-      reset();
+      reset({
+        active: true,
+      });
       setShowModal(false);
       setEditing(null);
       loadData();

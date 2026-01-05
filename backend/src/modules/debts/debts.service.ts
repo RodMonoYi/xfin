@@ -1,5 +1,6 @@
 import { prisma } from '../../config/database';
 import { Priority, DebtStatus, RecurrenceType, TransactionType, CategoryType } from '@prisma/client';
+import { categoriesService } from '../categories/categories.service';
 
 export class DebtsService {
   async list(userId: string) {
@@ -35,6 +36,7 @@ export class DebtsService {
     startDate: string;
     dueDate: string;
     priority?: Priority;
+    categoryId?: string | null;
   }) {
     const status = new Date(data.dueDate) < new Date() ? DebtStatus.OVERDUE : DebtStatus.OPEN;
 
@@ -49,6 +51,7 @@ export class DebtsService {
         dueDate: new Date(data.dueDate),
         priority: data.priority || Priority.MEDIUM,
         status,
+        categoryId: data.categoryId || null,
         userId,
       },
     });
@@ -63,6 +66,7 @@ export class DebtsService {
     startDate?: string;
     dueDate?: string;
     priority?: Priority;
+    categoryId?: string | null;
   }) {
     const debt = await prisma.debt.findFirst({
       where: { id, userId },
@@ -94,6 +98,7 @@ export class DebtsService {
       }
     }
     if (data.priority) updateData.priority = data.priority;
+    if (data.categoryId !== undefined) updateData.categoryId = data.categoryId;
 
     return prisma.debt.update({
       where: { id },
@@ -124,23 +129,12 @@ export class DebtsService {
       throw new Error('Dívida não encontrada');
     }
 
-    // Buscar categoria padrão de despesa
-    const defaultCategory = await prisma.category.findFirst({
-      where: {
-        type: CategoryType.EXPENSE,
-        OR: [
-          { isDefault: true },
-          { userId },
-        ],
-      },
-      orderBy: [
-        { isDefault: 'desc' },
-        { name: 'asc' },
-      ],
-    });
-
-    if (!defaultCategory) {
-      throw new Error('Nenhuma categoria de despesa encontrada');
+    // Usar categoria da dívida ou buscar/criar "Não especificado"
+    let categoryId: string;
+    if (debt.categoryId) {
+      categoryId = debt.categoryId;
+    } else {
+      categoryId = await categoriesService.findOrCreateUnspecified(userId, CategoryType.EXPENSE);
     }
 
     // Criar transação automaticamente
@@ -151,7 +145,7 @@ export class DebtsService {
         amount: debt.totalAmount,
         date: now,
         description: debt.description || `Pagamento: ${debt.creditorName}`,
-        categoryId: defaultCategory.id,
+        categoryId,
         userId,
         isImportant: debt.priority === Priority.HIGH,
       },

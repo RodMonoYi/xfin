@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { receivablesApi, Receivable, CreateReceivableData } from '../api/receivables';
+import { categoriesApi, Category } from '../api/categories';
 import { Layout } from '../components/Layout';
 import { formatCurrency, formatDate } from '../utils/format';
 import { useForm } from 'react-hook-form';
@@ -12,12 +13,14 @@ const receivableSchema = z.object({
   description: z.string().optional(),
   totalAmount: z.number().min(0.01),
   dueDate: z.string().min(1, 'Data de vencimento é obrigatória'),
+  categoryId: z.string().optional().nullable(),
 });
 
 type ReceivableFormData = z.infer<typeof receivableSchema>;
 
 export const Receivables: React.FC = () => {
   const [receivables, setReceivables] = useState<Receivable[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Receivable | null>(null);
@@ -37,8 +40,12 @@ export const Receivables: React.FC = () => {
 
   const loadData = async () => {
     try {
-      const data = await receivablesApi.list();
-      setReceivables(data);
+      const [receivablesData, categoriesData] = await Promise.all([
+        receivablesApi.list(),
+        categoriesApi.list(),
+      ]);
+      setReceivables(receivablesData);
+      setCategories(categoriesData);
     } catch (error: any) {
       console.error('Erro ao carregar recebíveis:', error);
       toast.error('Erro ao carregar recebíveis. Tente novamente.');
@@ -82,6 +89,7 @@ export const Receivables: React.FC = () => {
       description: receivable.description || '',
       totalAmount: receivable.totalAmount,
       dueDate: receivable.dueDate.split('T')[0],
+      categoryId: receivable.categoryId || null,
     });
     setShowModal(true);
   };
@@ -316,6 +324,23 @@ export const Receivables: React.FC = () => {
                     }`}
                   />
                   {errors.dueDate && <p className="text-red-600 text-sm mt-1">{errors.dueDate.message}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Categoria (para quando lançar como transação)
+                  </label>
+                  <select 
+                    {...register('categoryId')} 
+                    className="mt-1 block w-full border-gray-300 rounded-md px-3 py-2 border"
+                  >
+                    <option value="">Não especificado</option>
+                    {categories
+                      .filter(c => c.type === 'INCOME')
+                      .map((cat) => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                      ))}
+                  </select>
                 </div>
 
                 <div className="flex justify-end gap-2">

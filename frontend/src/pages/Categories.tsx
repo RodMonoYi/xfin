@@ -58,7 +58,9 @@ export const Categories: React.FC = () => {
         await categoriesApi.create(data);
         toast.success('Categoria criada com sucesso!');
       }
-      reset();
+      reset({
+        type: 'EXPENSE',
+      });
       setShowModal(false);
       setEditing(null);
       loadData();

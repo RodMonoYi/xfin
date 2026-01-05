@@ -104,7 +104,11 @@ export const Wishlist: React.FC = () => {
         await wishlistApi.create(formData);
         toast.success('Item criado com sucesso!');
       }
-      reset();
+      reset({
+        priority: 'MEDIA',
+        status: 'PLANNED',
+        purchaseLinks: [],
+      });
       setPurchaseLinks(['']);
       setShowModal(false);
       setEditing(null);

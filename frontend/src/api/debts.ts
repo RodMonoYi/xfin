@@ -12,6 +12,7 @@ export interface Debt {
   paidAt: string | null;
   priority: 'LOW' | 'MEDIUM' | 'HIGH';
   status: 'OPEN' | 'PAID' | 'OVERDUE';
+  categoryId: string | null;
   userId: string;
   createdAt: string;
   updatedAt: string;
@@ -26,6 +27,7 @@ export interface CreateDebtData {
   startDate: string;
   dueDate: string;
   priority?: 'LOW' | 'MEDIUM' | 'HIGH';
+  categoryId?: string | null;
 }
 
 export const debtsApi = {
