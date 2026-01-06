@@ -41,7 +41,6 @@ export const Dashboard: React.FC = () => {
         categoryId: expenseCategory.id,
       });
 
-      // Marcar dívida como paga
       await debtsApi.markPaid(debt.id);
 
       toast.success('Transação criada e dívida marcada como paga!');
@@ -73,7 +72,6 @@ export const Dashboard: React.FC = () => {
         categoryId: incomeCategory.id,
       });
 
-      // Marcar recebível como recebido
       await receivablesApi.markReceived(receivable.id);
 
       toast.success('Transação criada e recebível marcado como recebido!');
@@ -97,7 +95,6 @@ export const Dashboard: React.FC = () => {
     }
   };
 
-  // Filtrar pendências do dia - DEVE VIR ANTES DOS EARLY RETURNS (Rules of Hooks)
   const todayItems = useMemo(() => {
     if (!summary) return [];
     
@@ -129,7 +126,6 @@ export const Dashboard: React.FC = () => {
       }
     });
 
-    // Recebíveis que vencem hoje
     summary.pendingReceivables.forEach((receivable: any) => {
       const dueDate = new Date(receivable.dueDate);
       dueDate.setHours(0, 0, 0, 0);
@@ -173,7 +169,6 @@ export const Dashboard: React.FC = () => {
   const evolutionColor = summary.balanceEvolution >= 0 ? 'text-green-600' : 'text-red-600';
   const projectionColor = summary.monthProjection >= 0 ? 'text-green-600' : 'text-red-600';
   
-  // Calcular balanço completo: saldo atual - dívidas abertas + recebíveis abertos
   const completeBalance = summary.currentBalance - summary.totalDebts + summary.totalReceivables;
   const completeBalanceColor = completeBalance >= 0 ? 'text-green-600' : 'text-red-600';
 

@@ -144,7 +144,6 @@ export const PiggyBankDetails: React.FC = () => {
 
     const amountPerPeriod = Number(piggyBank.amountPerPeriod);
     
-    // Calcular períodos baseado no tipo
     let totalDays = 0;
     switch (piggyBank.periodType) {
       case 'DAY':
@@ -161,7 +160,6 @@ export const PiggyBankDetails: React.FC = () => {
         break;
     }
 
-    // Formatar no menor formato possível
     if (totalDays >= 30) {
       const months = Math.floor(totalDays / 30);
       const remainingDays = totalDays % 30;

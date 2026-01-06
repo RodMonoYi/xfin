@@ -40,7 +40,6 @@ export class PiggyBanksController {
       res.status(201).json(item);
     } catch (error: any) {
       console.error('Erro ao criar caixinha:', error);
-      // Se houver erro e um arquivo foi enviado, deletar o arquivo
       if (req.file) {
         const filePath = path.join(process.cwd(), 'uploads', req.file.filename);
         if (fs.existsSync(filePath)) {
@@ -56,12 +55,10 @@ export class PiggyBanksController {
       console.log('Arquivo recebido (update):', req.file);
       console.log('Body recebido (update):', req.body);
       
-      // Buscar caixinha atual para deletar foto antiga se necessário
       const currentPiggyBank = await piggyBanksService.findById(req.userId!, req.params.id);
       
       const photoUrl = req.file ? `/uploads/${req.file.filename}` : req.body.photoUrl;
       
-      // Se uma nova foto foi enviada e havia uma foto antiga, deletar a antiga
       if (req.file && currentPiggyBank.photoUrl) {
         const oldFilePath = path.join(process.cwd(), 'uploads', path.basename(currentPiggyBank.photoUrl));
         if (fs.existsSync(oldFilePath)) {
@@ -81,7 +78,6 @@ export class PiggyBanksController {
       res.json(item);
     } catch (error: any) {
       console.error('Erro ao atualizar caixinha:', error);
-      // Se houver erro e um arquivo foi enviado, deletar o arquivo
       if (req.file) {
         const filePath = path.join(process.cwd(), 'uploads', req.file.filename);
         if (fs.existsSync(filePath)) {

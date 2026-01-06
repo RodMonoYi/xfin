@@ -15,7 +15,6 @@ export class WishlistService {
       where: { userId },
     });
     
-    // Ordenar por prioridade (ordem do enum) e depois por preço
     return items.sort((a, b) => {
       const priorityDiff = priorityOrder[b.priority] - priorityOrder[a.priority];
       if (priorityDiff !== 0) return priorityDiff;
@@ -44,7 +43,7 @@ export class WishlistService {
         targetDate: data.targetDate ? new Date(data.targetDate) : null,
         status: data.status || WishlistStatus.PLANNED,
         photoUrl: data.photoUrl || null,
-        purchaseLinks: data.purchaseLinks || null,
+        purchaseLinks: data.purchaseLinks ? (data.purchaseLinks as any) : null,
         userId,
       },
     });

@@ -17,10 +17,10 @@ const wishlistSchema = z.object({
   photo: z.any().optional().nullable(),
   purchaseLinks: z.array(z.string()).optional().nullable(),
 }).refine((data) => {
-  // Validar URLs apenas se houver links não vazios
+
   if (data.purchaseLinks && data.purchaseLinks.length > 0) {
     return data.purchaseLinks.every(link => {
-      if (!link || link.trim() === '') return true; // Links vazios são permitidos
+      if (!link || link.trim() === '') return true;
       try {
         new URL(link);
         return true;
@@ -318,9 +318,8 @@ export const Wishlist: React.FC = () => {
                   <input
                     type="text"
                     {...register('name')}
-                    className={`mt-1 block w-full rounded-md px-3 py-2 border ${
-                      errors.name ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
-                    }`}
+                    className={`mt-1 block w-full rounded-md px-3 py-2 border ${errors.name ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                      }`}
                   />
                   {errors.name && <p className="text-red-600 text-sm mt-1">{errors.name.message}</p>}
                 </div>
@@ -331,9 +330,8 @@ export const Wishlist: React.FC = () => {
                   </label>
                   <select
                     {...register('priority')}
-                    className={`mt-1 block w-full rounded-md px-3 py-2 border ${
-                      errors.priority ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
-                    }`}
+                    className={`mt-1 block w-full rounded-md px-3 py-2 border ${errors.priority ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                      }`}
                   >
                     <option value="SUPERFLUO">Superfluo</option>
                     <option value="BAIXA">Baixa</option>

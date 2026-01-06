@@ -1,4 +1,4 @@
-import { PrismaClient, CategoryType, TransactionType, PaymentMethod, Priority, DebtStatus, ReceivableStatus, WishlistStatus } from '@prisma/client';
+import { PrismaClient, CategoryType, TransactionType, PaymentMethod, Priority, DebtStatus, ReceivableStatus, WishlistStatus, WishlistPriority } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -6,7 +6,6 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Iniciando seed...');
 
-  // Criar categorias padrão
   const defaultCategories = [
     { name: 'Alimentação', type: CategoryType.EXPENSE },
     { name: 'Transporte', type: CategoryType.EXPENSE },
@@ -24,7 +23,7 @@ async function main() {
     { name: 'Não especificado', type: CategoryType.INCOME },
   ];
 
-  const createdCategories = [];
+  const createdCategories: Array<{ id: string; name: string; type: CategoryType }> = [];
   for (const cat of defaultCategories) {
     const existing = await prisma.category.findFirst({
       where: { name: cat.name, isDefault: true }
@@ -39,11 +38,10 @@ async function main() {
       createdCategories.push(category);
       console.log(`✅ Categoria criada: ${cat.name}`);
     } else {
-      createdCategories.push(existing);
+      createdCategories.push(existing as { id: string; name: string; type: CategoryType });
     }
   }
 
-  // Criar usuário demo
   const demoPasswordHash = await bcrypt.hash('demo123', 10);
   
   let demoUser = await prisma.user.findUnique({
@@ -65,17 +63,15 @@ async function main() {
     console.log('ℹ️ Usuário demo já existe');
   }
 
-  // Criar categorias personalizadas do usuário demo
-  const userCategories = [];
-  const foodCategory = createdCategories.find(c => c.name === 'Alimentação');
-  const transportCategory = createdCategories.find(c => c.name === 'Transporte');
-  const salaryCategory = createdCategories.find(c => c.name === 'Salário');
+  const userCategories: Array<{ id: string; name: string; type: CategoryType }> = [];
+  const foodCategory = createdCategories.find((c: { id: string; name: string; type: CategoryType }) => c.name === 'Alimentação');
+  const transportCategory = createdCategories.find((c: { id: string; name: string; type: CategoryType }) => c.name === 'Transporte');
+  const salaryCategory = createdCategories.find((c: { id: string; name: string; type: CategoryType }) => c.name === 'Salário');
 
   if (foodCategory) userCategories.push(foodCategory);
   if (transportCategory) userCategories.push(transportCategory);
   if (salaryCategory) userCategories.push(salaryCategory);
 
-  // Criar transações de exemplo
   const transactionsCount = await prisma.transaction.count({
     where: { userId: demoUser.id }
   });
@@ -83,7 +79,6 @@ async function main() {
   if (transactionsCount === 0 && userCategories.length > 0) {
     const now = new Date();
     
-    // Transações de receita
     await prisma.transaction.create({
       data: {
         type: TransactionType.INCOME,
@@ -96,7 +91,6 @@ async function main() {
       },
     });
 
-    // Transações de despesa
     await prisma.transaction.create({
       data: {
         type: TransactionType.EXPENSE,
@@ -125,7 +119,6 @@ async function main() {
     console.log('✅ Transações de exemplo criadas');
   }
 
-  // Criar dívidas de exemplo
   const debtsCount = await prisma.debt.count({
     where: { userId: demoUser.id }
   });
@@ -138,7 +131,7 @@ async function main() {
         totalAmount: 1500.00,
         isRecurring: false,
         startDate: new Date(),
-        dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15 dias
+        dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
         priority: Priority.HIGH,
         status: DebtStatus.OPEN,
         userId: demoUser.id,
@@ -148,7 +141,6 @@ async function main() {
     console.log('✅ Dívidas de exemplo criadas');
   }
 
-  // Criar recebíveis de exemplo
   const receivablesCount = await prisma.receivable.count({
     where: { userId: demoUser.id }
   });
@@ -159,7 +151,7 @@ async function main() {
         debtorName: 'Cliente ABC',
         description: 'Pagamento de projeto',
         totalAmount: 3000.00,
-        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 dias
+        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         status: ReceivableStatus.OPEN,
         userId: demoUser.id,
       },
@@ -168,7 +160,6 @@ async function main() {
     console.log('✅ Recebíveis de exemplo criados');
   }
 
-  // Criar itens da lista de desejos
   const wishlistCount = await prisma.wishlistItem.count({
     where: { userId: demoUser.id }
   });
@@ -177,7 +168,7 @@ async function main() {
     await prisma.wishlistItem.create({
       data: {
         name: 'Notebook novo',
-        priority: 5,
+        priority: WishlistPriority.ALTA,
         estimatedPrice: 3500.00,
         utilityNote: 'Para trabalho',
         targetDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
@@ -189,7 +180,7 @@ async function main() {
     await prisma.wishlistItem.create({
       data: {
         name: 'Fone de ouvido',
-        priority: 3,
+        priority: WishlistPriority.MEDIA,
         estimatedPrice: 200.00,
         utilityNote: 'Para reuniões',
         status: WishlistStatus.PLANNED,
@@ -200,7 +191,6 @@ async function main() {
     console.log('✅ Itens da lista de desejos criados');
   }
 
-  // Criar ganhos fixos
   const recurringIncomesCount = await prisma.recurringIncome.count({
     where: { userId: demoUser.id }
   });
@@ -220,7 +210,6 @@ async function main() {
     console.log('✅ Ganhos fixos criados');
   }
 
-  // Criar gastos fixos
   const recurringExpensesCount = await prisma.recurringExpense.count({
     where: { userId: demoUser.id }
   });

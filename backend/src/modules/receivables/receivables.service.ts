@@ -12,7 +12,6 @@ export class ReceivablesService {
       ],
     });
 
-    // Atualizar status para OVERDUE se necessário
     const now = new Date();
     for (const receivable of receivables) {
       if (receivable.status === ReceivableStatus.OPEN && receivable.dueDate < now && !receivable.receivedAt) {
@@ -64,7 +63,6 @@ export class ReceivablesService {
       throw new Error('Recebível não encontrado');
     }
 
-    // Bloquear edição se estiver recebido
     if (receivable.status === ReceivableStatus.RECEIVED) {
       throw new Error('Não é possível editar um recebível que já foi recebido. Reabra o recebível primeiro.');
     }
@@ -75,7 +73,6 @@ export class ReceivablesService {
     if (data.totalAmount !== undefined) updateData.totalAmount = data.totalAmount;
     if (data.dueDate) {
       updateData.dueDate = new Date(data.dueDate);
-      // Atualizar status se necessário
       if (!receivable.receivedAt && new Date(data.dueDate) < new Date()) {
         updateData.status = ReceivableStatus.OVERDUE;
       } else if (!receivable.receivedAt && receivable.status === ReceivableStatus.OVERDUE && new Date(data.dueDate) >= new Date()) {
@@ -113,7 +110,6 @@ export class ReceivablesService {
       throw new Error('Recebível não encontrado');
     }
 
-    // Usar categoria do recebível ou buscar/criar "Não especificado"
     let categoryId: string;
     if (receivable.categoryId) {
       categoryId = receivable.categoryId;
@@ -121,7 +117,6 @@ export class ReceivablesService {
       categoryId = await categoriesService.findOrCreateUnspecified(userId, CategoryType.INCOME);
     }
 
-    // Criar transação automaticamente
     const now = new Date();
     await prisma.transaction.create({
       data: {
@@ -156,7 +151,6 @@ export class ReceivablesService {
       throw new Error('Este recebível não está marcado como recebido');
     }
 
-    // Determinar o status correto baseado na data de vencimento
     const now = new Date();
     const status = receivable.dueDate < now ? ReceivableStatus.OVERDUE : ReceivableStatus.OPEN;
 

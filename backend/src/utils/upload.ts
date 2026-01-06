@@ -4,7 +4,6 @@ import fs from 'fs';
 
 function getUploadsDir() {
   const uploadsDir = path.join(process.cwd(), 'uploads');
-  // Criar diretório de uploads se não existir
   if (!fs.existsSync(uploadsDir)) {
     try {
       fs.mkdirSync(uploadsDir, { recursive: true });
@@ -42,7 +41,7 @@ const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCa
 const multerConfig = multer({
   storage,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB
+    fileSize: 5 * 1024 * 1024,
   },
   fileFilter,
 });

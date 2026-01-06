@@ -36,7 +36,6 @@ export const Register: React.FC = () => {
     setLoading(true);
     try {
       const user = await registerUser(data.name, data.email, data.password);
-      // Redireciona baseado no status do onboarding
       if (!user.initialBalanceSetAt) {
         navigate('/onboarding');
       } else {

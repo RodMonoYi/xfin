@@ -108,7 +108,7 @@ export const Transactions: React.FC = () => {
       ]);
       setTransactions(transactionsData);
       setCategories(categoriesData);
-      setCurrentPage(1); // Reset to first page when filters change
+      setCurrentPage(1);
     } catch (error: any) {
       console.error('Erro ao carregar dados:', error);
       toast.error('Erro ao carregar transações. Tente novamente.');
@@ -241,12 +241,10 @@ export const Transactions: React.FC = () => {
 
   const categoryExpenses = calculateCategoryExpenses();
 
-  // Paginação
   const totalPages = Math.ceil(transactions.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
 
-  // Função para ordenar transações
   const sortedTransactions = [...transactions].sort((a, b) => {
     let aValue: any;
     let bValue: any;

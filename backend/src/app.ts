@@ -19,12 +19,10 @@ app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 
-// Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-// Routes
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/onboarding', onboardingRouter);
 app.use('/api/v1/dashboard', dashboardRouter);

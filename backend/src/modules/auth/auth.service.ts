@@ -39,7 +39,7 @@ export class AuthService {
     const accessToken = generateAccessToken(payload);
     const refreshToken = generateRefreshToken(payload);
 
-    // Salvar refresh token
+
     const refreshTokenHash = await bcrypt.hash(refreshToken, 10);
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
@@ -81,10 +81,9 @@ export class AuthService {
     const accessToken = generateAccessToken(payload);
     const refreshToken = generateRefreshToken(payload);
 
-    // Salvar refresh token
     const refreshTokenHash = await bcrypt.hash(refreshToken, 10);
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + (rememberMe ? 30 : 7)); // 30 dias se lembrar, 7 dias caso contrário
+    expiresAt.setDate(expiresAt.getDate() + (rememberMe ? 30 : 7));
 
     await prisma.session.create({
       data: {

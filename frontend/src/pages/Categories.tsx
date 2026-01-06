@@ -122,7 +122,6 @@ export const Categories: React.FC = () => {
     ? categories
     : categories.filter(c => c.type === filterType);
 
-  // Separar categorias personalizadas das padrão
   const customCategories = filteredCategories.filter(c => !c.isDefault);
   const defaultCategories = filteredCategories.filter(c => c.isDefault);
 

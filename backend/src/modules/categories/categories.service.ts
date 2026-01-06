@@ -81,7 +81,6 @@ export class CategoriesService {
   }
 
   async findOrCreateUnspecified(userId: string, type: CategoryType): Promise<string> {
-    // Buscar categoria "Não especificado" do usuário ou padrão
     let category = await prisma.category.findFirst({
       where: {
         name: 'Não especificado',
@@ -94,7 +93,6 @@ export class CategoriesService {
     });
 
     if (!category) {
-      // Criar categoria padrão "Não especificado" se não existir
       category = await prisma.category.create({
         data: {
           name: 'Não especificado',

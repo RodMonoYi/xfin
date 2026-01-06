@@ -8,7 +8,7 @@ export class PiggyBanksService {
       include: {
         transactions: {
           orderBy: { createdAt: 'desc' },
-          take: 5, // Últimas 5 transações para preview
+          take: 5,
         },
       },
       orderBy: { createdAt: 'desc' },
@@ -93,7 +93,6 @@ export class PiggyBanksService {
       throw new Error('Caixinha não encontrada');
     }
 
-    // Deletar foto se existir
     if (piggyBank.photoUrl) {
       const fs = require('fs');
       const path = require('path');
@@ -128,7 +127,6 @@ export class PiggyBanksService {
       throw new Error('Saldo insuficiente na caixinha');
     }
 
-    // Criar transação
     const transaction = await prisma.piggyBankTransaction.create({
       data: {
         piggyBankId,
@@ -138,7 +136,6 @@ export class PiggyBanksService {
       },
     });
 
-    // Atualizar saldo da caixinha
     await prisma.piggyBank.update({
       where: { id: piggyBankId },
       data: {

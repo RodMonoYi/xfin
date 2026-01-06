@@ -12,7 +12,6 @@ export class DebtsService {
       ],
     });
 
-    // Atualizar status para OVERDUE se necessário
     const now = new Date();
     for (const debt of debts) {
       if (debt.status === DebtStatus.OPEN && debt.dueDate < now && !debt.paidAt) {
@@ -76,7 +75,6 @@ export class DebtsService {
       throw new Error('Dívida não encontrada');
     }
 
-    // Bloquear edição se estiver paga
     if (debt.status === DebtStatus.PAID) {
       throw new Error('Não é possível editar uma dívida que já foi paga. Reabra a dívida primeiro.');
     }
@@ -90,7 +88,6 @@ export class DebtsService {
     if (data.startDate) updateData.startDate = new Date(data.startDate);
     if (data.dueDate) {
       updateData.dueDate = new Date(data.dueDate);
-      // Atualizar status se necessário
       if (!debt.paidAt && new Date(data.dueDate) < new Date()) {
         updateData.status = DebtStatus.OVERDUE;
       } else if (!debt.paidAt && debt.status === DebtStatus.OVERDUE && new Date(data.dueDate) >= new Date()) {
@@ -129,7 +126,6 @@ export class DebtsService {
       throw new Error('Dívida não encontrada');
     }
 
-    // Usar categoria da dívida ou buscar/criar "Não especificado"
     let categoryId: string;
     if (debt.categoryId) {
       categoryId = debt.categoryId;
@@ -137,7 +133,6 @@ export class DebtsService {
       categoryId = await categoriesService.findOrCreateUnspecified(userId, CategoryType.EXPENSE);
     }
 
-    // Criar transação automaticamente
     const now = new Date();
     await prisma.transaction.create({
       data: {
@@ -173,7 +168,6 @@ export class DebtsService {
       throw new Error('Esta dívida não está marcada como paga');
     }
 
-    // Determinar o status correto baseado na data de vencimento
     const now = new Date();
     const status = debt.dueDate < now ? DebtStatus.OVERDUE : DebtStatus.OPEN;
 

@@ -80,7 +80,6 @@ export class TransactionsService {
       },
     });
 
-    // Se for parcela, criar as outras transações
     if (data.isInstallment && data.installmentsTotal && data.installmentsTotal > 1) {
       const installmentAmount = data.amount / data.installmentsTotal;
       const transactions = [];
@@ -165,7 +164,6 @@ export class TransactionsService {
       throw new Error('Transação não encontrada');
     }
 
-    // Se for transação principal de parcelas, deletar também as parcelas
     if (transaction.isInstallment && !transaction.parentId) {
       await prisma.transaction.deleteMany({
         where: {

@@ -28,7 +28,6 @@ export class WishlistController {
       });
       res.status(201).json(item);
     } catch (error: any) {
-      // Se houver erro e um arquivo foi enviado, deletar o arquivo
       if (req.file) {
         const filePath = path.join(process.cwd(), 'uploads', req.file.filename);
         if (fs.existsSync(filePath)) {
@@ -41,7 +40,6 @@ export class WishlistController {
 
   async update(req: AuthRequest, res: Response) {
     try {
-      // Buscar item atual para deletar foto antiga se necessário
       const currentItem = await wishlistService.findById(req.userId!, req.params.id);
       
       const photoUrl = req.file ? `/uploads/${req.file.filename}` : req.body.photoUrl;
@@ -49,7 +47,6 @@ export class WishlistController {
         ? (typeof req.body.purchaseLinks === 'string' ? JSON.parse(req.body.purchaseLinks) : req.body.purchaseLinks)
         : req.body.purchaseLinks === null ? null : undefined;
       
-      // Se uma nova foto foi enviada e havia uma foto antiga, deletar a antiga
       if (req.file && currentItem.photoUrl) {
         const oldFilePath = path.join(process.cwd(), 'uploads', path.basename(currentItem.photoUrl));
         if (fs.existsSync(oldFilePath)) {
@@ -64,7 +61,6 @@ export class WishlistController {
       const item = await wishlistService.update(req.userId!, req.params.id, updateData);
       res.json(item);
     } catch (error: any) {
-      // Se houver erro e um arquivo foi enviado, deletar o arquivo
       if (req.file) {
         const filePath = path.join(process.cwd(), 'uploads', req.file.filename);
         if (fs.existsSync(filePath)) {
@@ -77,7 +73,6 @@ export class WishlistController {
 
   async delete(req: AuthRequest, res: Response) {
     try {
-      // Buscar item para deletar foto se existir
       const item = await wishlistService.findById(req.userId!, req.params.id);
       
       if (item.photoUrl) {

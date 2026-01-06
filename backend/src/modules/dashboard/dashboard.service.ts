@@ -16,7 +16,6 @@ export class DashboardService {
 
     const initialBalance = Number(user.initialBalance);
 
-    // Soma de entradas
     const incomes = await prisma.transaction.aggregate({
       where: {
         userId,
@@ -27,7 +26,6 @@ export class DashboardService {
       },
     });
 
-    // Soma de saídas
     const expenses = await prisma.transaction.aggregate({
       where: {
         userId,
@@ -42,7 +40,6 @@ export class DashboardService {
     const totalExpenses = Number(expenses._sum.amount || 0);
     const currentBalance = initialBalance + totalIncome - totalExpenses;
 
-    // Dívidas em aberto
     const openDebts = await prisma.debt.aggregate({
       where: {
         userId,
@@ -55,7 +52,6 @@ export class DashboardService {
       },
     });
 
-    // Recebíveis em aberto
     const openReceivables = await prisma.receivable.aggregate({
       where: {
         userId,
@@ -71,7 +67,6 @@ export class DashboardService {
     const totalDebts = Number(openDebts._sum.totalAmount || 0);
     const totalReceivables = Number(openReceivables._sum.totalAmount || 0);
 
-    // Transações do mês atual
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
@@ -107,7 +102,6 @@ export class DashboardService {
     const monthIncomeTotal = Number(monthIncomes._sum.amount || 0);
     const monthExpenseTotal = Number(monthExpenses._sum.amount || 0);
 
-    // Ganhos e gastos fixos
     const recurringIncomes = await prisma.recurringIncome.findMany({
       where: {
         userId,
@@ -122,13 +116,11 @@ export class DashboardService {
       },
     });
 
-    const totalRecurringIncome = recurringIncomes.reduce((sum, item) => sum + Number(item.amount), 0);
-    const totalRecurringExpense = recurringExpenses.reduce((sum, item) => sum + Number(item.amount), 0);
+    const totalRecurringIncome = recurringIncomes.reduce((sum: number, item: { amount: unknown }) => sum + Number(item.amount), 0);
+    const totalRecurringExpense = recurringExpenses.reduce((sum: number, item: { amount: unknown }) => sum + Number(item.amount), 0);
 
-    // Projeção do mês
     const monthProjection = monthIncomeTotal + totalRecurringIncome - monthExpenseTotal - totalRecurringExpense;
 
-    // Dívidas e recebíveis pendentes
     const pendingDebts = await prisma.debt.findMany({
       where: {
         userId,

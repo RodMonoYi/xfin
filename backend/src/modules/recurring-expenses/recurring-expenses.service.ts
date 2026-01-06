@@ -86,7 +86,6 @@ export class RecurringExpensesService {
       return { count: 0 };
     }
 
-    // Buscar categoria padrão de despesa
     const defaultCategory = await prisma.category.findFirst({
       where: {
         type: CategoryType.EXPENSE,
@@ -135,7 +134,6 @@ export class RecurringExpensesService {
       throw new Error('Gasto fixo não encontrado');
     }
 
-    // Buscar categoria padrão de despesa
     const defaultCategory = await prisma.category.findFirst({
       where: {
         type: CategoryType.EXPENSE,

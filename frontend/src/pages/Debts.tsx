@@ -83,7 +83,6 @@ export const Debts: React.FC = () => {
         loadData();
       } else {
         setConfirmModal({ show: true, type: 'create', amount: data.totalAmount });
-        // Salvar dados temporariamente para usar após confirmação
         (window as any).__pendingDebtData = data;
       }
     } catch (error: any) {

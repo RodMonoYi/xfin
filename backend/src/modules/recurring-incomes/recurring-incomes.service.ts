@@ -86,7 +86,6 @@ export class RecurringIncomesService {
       return { count: 0 };
     }
 
-    // Buscar categoria padrão de receita
     const defaultCategory = await prisma.category.findFirst({
       where: {
         type: CategoryType.INCOME,
@@ -135,7 +134,6 @@ export class RecurringIncomesService {
       throw new Error('Ganho fixo não encontrado');
     }
 
-    // Buscar categoria padrão de receita
     const defaultCategory = await prisma.category.findFirst({
       where: {
         type: CategoryType.INCOME,
