@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { debtsApi, Debt, CreateDebtData } from '../api/debts';
+import { debtsApi, Debt } from '../api/debts';
 import { categoriesApi, Category } from '../api/categories';
 import { Layout } from '../components/Layout';
 import { formatCurrency, formatDate } from '../utils/format';

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { categoriesApi, Category, CreateCategoryData } from '../api/categories';
+import { categoriesApi, Category } from '../api/categories';
 import { Layout } from '../components/Layout';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
