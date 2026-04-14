@@ -187,7 +187,7 @@ export const Wishlist: React.FC = () => {
   const plannedItems = items.filter(i => i.status === 'PLANNED');
   const boughtItems = items.filter(i => i.status === 'BOUGHT');
   const totalEstimated = plannedItems.reduce((sum, item) => sum + (Number(item.estimatedPrice) || 0), 0);
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  const apiUrl = import.meta.env.VITE_API_URL || '';
 
   if (loading) {
     return (

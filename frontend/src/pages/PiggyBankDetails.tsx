@@ -226,7 +226,7 @@ export const PiggyBankDetails: React.FC = () => {
     ? (Number(piggyBank.currentAmount) / Number(piggyBank.targetAmount)) * 100 
     : 0;
   const estimatedTime = calculateEstimatedTime();
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  const apiUrl = import.meta.env.VITE_API_URL || '';
 
   return (
     <Layout>

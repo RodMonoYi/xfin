@@ -289,7 +289,7 @@ export const PiggyBanks: React.FC = () => {
                 : 0;
               const estimatedTime = calculateEstimatedTime(piggyBank);
 
-              const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+              const apiUrl = import.meta.env.VITE_API_URL || '';
 
               return (
                 <div 

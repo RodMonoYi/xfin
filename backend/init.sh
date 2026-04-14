@@ -1,19 +1,23 @@
+#!/bin/sh
 set -e
 
 echo "Criando diretório de uploads..."
 mkdir -p uploads
 
-echo "Regenerando Prisma Client..."
+echo "Gerando/atualizando Prisma Client..."
 npx prisma generate
 
-echo "Resolvendo migrações falhadas (se houver)..."
-npx prisma migrate resolve --applied 20260103200317_add_name_to_recurring 2>/dev/null || true
-
-echo "Aplicando migrations..."
+echo "Aplicando migrations (deploy)..."
+# Tenta aplicar migrations, caso falhe, faz db push como fallback
 npx prisma migrate deploy || npx prisma db push --accept-data-loss
 
-echo "Executando seed..."
-npx prisma db seed
+if [ "$NODE_ENV" = "production" ]; then
+	echo "Não executando seed em produção por padrão. Defina ENABLE_SEED=true para executar."
+	if [ "$ENABLE_SEED" = "true" ]; then
+		echo "Executando seed..."
+		npx prisma db seed
+	fi
+fi
 
-echo "Iniciando servidor..."
-npm run dev
+echo "Iniciando servidor (production)..."
+npm run start
