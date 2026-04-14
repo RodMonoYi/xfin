@@ -1,9 +1,9 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { piggyBanksApi, PiggyBank, PiggyBankTransaction, CreatePiggyBankFormData, AddTransactionData } from '../api/piggyBanks';
+import { piggyBanksApi, PiggyBank, CreatePiggyBankFormData } from '../api/piggyBanks';
 import { Layout } from '../components/Layout';
-import { formatCurrency, formatDate } from '../utils/format';
+import { formatCurrency } from '../utils/format';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -38,7 +38,7 @@ export const PiggyBanks: React.FC = () => {
   const menuRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const photoInputRef = useRef<HTMLInputElement | null>(null);
 
-  const { register: registerPiggyBank, handleSubmit: handleSubmitPiggyBank, reset: resetPiggyBank, watch: watchPiggyBank, getValues, formState: { errors: errorsPiggyBank } } = useForm<PiggyBankFormData>({
+  const { register: registerPiggyBank, handleSubmit: handleSubmitPiggyBank, reset: resetPiggyBank, formState: { errors: errorsPiggyBank } } = useForm<PiggyBankFormData>({
     resolver: zodResolver(piggyBankSchema),
   });
 

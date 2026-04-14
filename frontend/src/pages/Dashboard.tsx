@@ -5,6 +5,8 @@ import { Layout } from '../components/Layout';
 import { formatCurrency } from '../utils/format';
 import { debtsApi } from '../api/debts';
 import { receivablesApi } from '../api/receivables';
+import { categoriesApi } from '../api/categories';
+import { transactionsApi } from '../api/transactions';
 import { TodayCarousel } from '../components/TodayCarousel';
 
 export const Dashboard: React.FC = () => {
@@ -25,7 +27,7 @@ export const Dashboard: React.FC = () => {
     setProcessingDebt(debt.id);
     try {
       const categories = await categoriesApi.list();
-      const expenseCategory = categories.find(c => c.type === 'EXPENSE');
+      const expenseCategory = categories.find((c) => c.type === 'EXPENSE');
       
       if (!expenseCategory) {
         toast.error('Nenhuma categoria de despesa encontrada');
@@ -56,7 +58,7 @@ export const Dashboard: React.FC = () => {
     setProcessingReceivable(receivable.id);
     try {
       const categories = await categoriesApi.list();
-      const incomeCategory = categories.find(c => c.type === 'INCOME');
+      const incomeCategory = categories.find((c) => c.type === 'INCOME');
       
       if (!incomeCategory) {
         toast.error('Nenhuma categoria de receita encontrada');

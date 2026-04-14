@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { recurringApi, RecurringIncome, RecurringExpense, CreateRecurringData } from '../api/recurring';
+import { recurringApi, RecurringIncome, RecurringExpense } from '../api/recurring';
 import { Layout } from '../components/Layout';
 import { formatCurrency } from '../utils/format';
 import { useForm } from 'react-hook-form';

@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { piggyBanksApi, PiggyBank, PiggyBankTransaction, AddTransactionData, CreatePiggyBankFormData } from '../api/piggyBanks';
+import { piggyBanksApi, PiggyBank, PiggyBankTransaction, CreatePiggyBankFormData } from '../api/piggyBanks';
 import { Layout } from '../components/Layout';
 import { formatCurrency, formatDate } from '../utils/format';
 import { useForm } from 'react-hook-form';

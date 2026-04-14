@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { transactionsApi, Transaction, CreateTransactionData } from '../api/transactions';
+import { transactionsApi, Transaction } from '../api/transactions';
 import { categoriesApi, Category } from '../api/categories';
 import { Layout } from '../components/Layout';
 import { formatCurrency, formatDate } from '../utils/format';
@@ -30,7 +30,6 @@ interface CategoryExpense {
 }
 
 type SortField = 'date' | 'createdAt' | 'amount' | 'category';
-type SortDirection = 'asc' | 'desc';
 type DateRange = 'all' | '7days' | '30days' | 'custom';
 
 export const Transactions: React.FC = () => {
@@ -158,19 +157,6 @@ export const Transactions: React.FC = () => {
       installmentsTotal: transaction.installmentsTotal || undefined,
     });
     setShowModal(true);
-  };
-
-  const handleEditCategory = (category: Category) => {
-    if (category.isDefault) {
-      toast.error('Não é possível editar categorias padrão');
-      return;
-    }
-    setEditingCategory(category);
-    resetCategory({
-      name: category.name,
-      type: category.type,
-    });
-    setShowCategoryModal(true);
   };
 
   const handleDelete = async (id: string) => {

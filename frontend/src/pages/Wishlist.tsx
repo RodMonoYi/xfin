@@ -53,7 +53,7 @@ export const Wishlist: React.FC = () => {
   const [purchaseLinks, setPurchaseLinks] = useState<string[]>(['']);
   const photoInputRef = useRef<HTMLInputElement | null>(null);
 
-  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<WishlistFormData>({
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<WishlistFormData>({
     resolver: zodResolver(wishlistSchema),
     defaultValues: {
       priority: 'MEDIA',

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { receivablesApi, Receivable, CreateReceivableData } from '../api/receivables';
+import { receivablesApi, Receivable } from '../api/receivables';
 import { categoriesApi, Category } from '../api/categories';
 import { Layout } from '../components/Layout';
 import { formatCurrency, formatDate } from '../utils/format';

@@ -89,8 +89,6 @@ export const TodayCarousel: React.FC<TodayCarouselProps> = ({
     }
   };
 
-  const currentItem = items[currentIndex];
-
   return (
     <div className="relative w-full mb-6">
       {/* Header */}
@@ -134,7 +132,7 @@ export const TodayCarousel: React.FC<TodayCarouselProps> = ({
           className="flex transition-transform duration-500 ease-in-out"
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
         >
-          {items.map((item, index) => (
+          {items.map((item) => (
             <div key={item.id} className="min-w-full flex-shrink-0">
               <TodayCard
                 item={item}
