@@ -40,8 +40,6 @@ services:
     networks:
       - xfin-network
     volumes:
-      - ./backend:/app
-      - /app/node_modules
       - ./backend/uploads:/app/uploads
 
   frontend:
@@ -57,9 +55,7 @@ services:
       - backend
     networks:
       - xfin-network
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+
 
 networks:
   xfin-network:
