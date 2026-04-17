@@ -17,6 +17,8 @@ RUN mkdir -p uploads
 
 RUN npx prisma generate
 
+RUN npm run build
+
 COPY init.sh /app/init.sh
 RUN chmod +x /app/init.sh
 

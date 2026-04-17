@@ -1,20 +1,19 @@
 version: '3.8'
 
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: xfin-mysql
+  postgres:
+    image: postgres:15-alpine
+    container_name: xfin-postgres
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: xfin
-      MYSQL_USER: xfin_user
-      MYSQL_PASSWORD: xfin_password
+      POSTGRES_USER: xfin_user
+      POSTGRES_PASSWORD: xfin_password
+      POSTGRES_DB: xfin
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - pg_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      test: ["CMD-SHELL", "pg_isready -U xfin_user -d xfin"]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -27,7 +26,7 @@ services:
       dockerfile: Dockerfile
     container_name: xfin-backend
     environment:
-      DATABASE_URL: mysql://xfin_user:xfin_password@mysql:3306/xfin
+      DATABASE_URL: postgresql://xfin_user:xfin_password@postgres:5432/xfin?schema=public
       JWT_SECRET: your-super-secret-jwt-key-change-in-production
       JWT_REFRESH_SECRET: your-super-secret-refresh-key-change-in-production
       NODE_ENV: development
@@ -36,7 +35,7 @@ services:
       - "3000:3000"
       - "5555:5555"
     depends_on:
-      mysql:
+      postgres:
         condition: service_healthy
     networks:
       - xfin-network
@@ -67,5 +66,5 @@ networks:
     driver: bridge
 
 volumes:
-  mysql_data:
+  pg_data:
 
