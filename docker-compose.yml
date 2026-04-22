@@ -26,10 +26,10 @@ services:
       dockerfile: Dockerfile
     container_name: xfin-backend
     environment:
-      DATABASE_URL: postgresql://xfin_user:xfin_password@postgres:5432/xfin?schema=public
-      JWT_SECRET: your-super-secret-jwt-key-change-in-production
-      JWT_REFRESH_SECRET: your-super-secret-refresh-key-change-in-production
-      NODE_ENV: development
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-your-super-secret-refresh-key-change-in-production}
+      NODE_ENV: production
       PORT: 3000
     ports:
       - "3000:3000"
